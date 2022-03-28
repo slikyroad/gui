@@ -1,48 +1,72 @@
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardActions,
-  CardContent,
-  Container,
-  Grid,
-  styled,
-  TextField,
-  Tooltip,
-  tooltipClasses,
-  TooltipProps,
-  Typography,
-} from "@mui/material";
+import { Button, ButtonGroup, Card, CardActions, CardContent, Container, Grid, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import { Fragment, useEffect, useState } from "react";
-import { FormError, NewAppFormState } from "../utils/dtos";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { LightbulbOutlined } from "@mui/icons-material";
-
-interface LayerInterface {
-  index: number;
-  name: string;
-}
+import { Fragment, useState } from "react";
+import { toast } from "react-toastify";
+import { NewAppFormState } from "../utils/dtos";
+import LayerComponent from "./components/layer-component";
+import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
 
 const NewAppForm = () => {
-  const [formState, setFormState] = useState<NewAppFormState>({});
-  const [formErrors, setFormErrors] = useState<Array<FormError>>([]);
+  const [formState, setFormState] = useState<NewAppFormState>({
+    rarityDelimiter: "#",
+    editionNameFormat: "#",
+    outputDirName: "output",
+    outputImagesDirName: "images",
+    outputJsonDirName: "json",
+    outputJsonFileName: "metadata.json",
+    shuffleLayerConfigurations: false,
+    uniqueDnaTorrance: 10000,
+    outputImagesCarFileName: "images.car",
+    outputMetadataCarFileName: "metadata.car",
+    layerConfigurations: [
+      {
+        growEditionSizeTo: 100,
+      },
+    ],
+    preview: {
+      imageName: "preview.png",
+      imageRatio: 1,
+      thumbPerRow: 20,
+      thumbWidth: 60,
+    },
+    format: {
+      width: 100,
+      height: 100,
+    },
+    svgBase64DataOnly: false,
+  });
+
   const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
-  const [growEditionSizeTo, setGrowEditionSizeTo] = useState(100);
-
-  const resetValidation = () => {};
-
-  const getFormError = (name: string | undefined) => {
-    if (name) {
-      return formErrors.find((fe) => fe.component === name);
-    }
-  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({
       ...formState,
       [event.target.name]: event.target.value,
     });
+  };
+
+  const handleFormatChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const name = event.target.name;
+
+    if (name === "width") {
+      const _formState = formState;
+      _formState.format.width = +event.target.value;
+      setFormState({
+        ..._formState,
+      });
+    } else if (name === "height") {
+      const _formState = formState;
+      _formState.format.height = +event.target.value;
+      setFormState({
+        ..._formState,
+      });
+    } else if (name === "growEditionSizeTo") {
+      const _formState = formState;
+      _formState.layerConfigurations[0].growEditionSizeTo = +event.target.value;
+      setFormState({
+        ..._formState,
+      });
+    }
   };
 
   const handleLayersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,15 +95,39 @@ const NewAppForm = () => {
     setLayers([..._layers]);
   };
 
-  const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: "#f5f5f9",
-      color: "rgba(0, 0, 0, 0.87)",
-      maxWidth: 320,
-      fontSize: theme.typography.pxToRem(12),
-      border: "1px solid #dadde9",
-    },
-  }));
+  const addNewApp = () => {
+    console.log(formState);
+    if (!formState.name || formState.name.length === 0) {
+      toast.error("Please enter Project Name");
+      return;
+    }
+
+    if (!formState.description || formState.description.length === 0) {
+      toast.error("Please enter Project Description");
+      return;
+    }
+    
+    if (!formState.format.width || +formState.format.width <= 0) {
+      toast.error("Please enter width of generated NFT");
+      return;
+    }
+
+    if (!formState.format.height || +formState.format.height <= 0) {
+      toast.error("Please enter height of generated NFT");
+      return;
+    }
+
+    layers.forEach((layer) => {
+      if (!layer || layer.length === 0) {
+        toast.error("One of the layers is missing");
+        return;
+      }
+    });
+
+    formState.layerConfigurations[0].layersOrder = layers.map((layer) => {
+      return { name: layer };
+    });
+  };
 
   return (
     <Container maxWidth="md" style={{ paddingTop: "10px" }}>
@@ -95,7 +143,7 @@ const NewAppForm = () => {
                   <TextField
                     name="name"
                     type="text"
-                    label="Project Name"
+                    label="Project Name*"
                     defaultValue={formState?.name}
                     fullWidth
                     margin="dense"
@@ -103,8 +151,6 @@ const NewAppForm = () => {
                       shrink: true,
                     }}
                     onChange={handleChange}
-                    error={getFormError("name")?.isError}
-                    helperText={getFormError("name")?.error}
                   />
                 </Grid>
 
@@ -112,7 +158,7 @@ const NewAppForm = () => {
                   <TextField
                     name="description"
                     type="text"
-                    label="Description"
+                    label="Description*"
                     defaultValue={formState?.name}
                     fullWidth
                     margin="dense"
@@ -120,9 +166,61 @@ const NewAppForm = () => {
                       shrink: true,
                     }}
                     onChange={handleChange}
-                    error={getFormError("description")?.isError}
-                    helperText={getFormError("description")?.error}
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    placeholder="comma separated list of tags"
+                    name="tags"
+                    type="text"
+                    label="Tags"
+                    defaultValue={formState?.tags}
+                    fullWidth
+                    margin="dense"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Fragment>
+                    <CardContent>
+                      <Typography variant="h5" color="ButtonShadow" gutterBottom>
+                        Format (in Pixels)
+                      </Typography>
+                      <Fragment>
+                        <Grid item xs={12}>
+                          <TextField
+                            name="width"
+                            type="number"
+                            label="Width"
+                            defaultValue={formState.format.width}
+                            fullWidth
+                            margin="dense"
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                            onChange={handleFormatChange}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            name="height"
+                            type="number"
+                            label="Height"
+                            defaultValue={formState.format.height}
+                            fullWidth
+                            margin="dense"
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                            onChange={handleFormatChange}
+                          />
+                        </Grid>
+                      </Fragment>
+                    </CardContent>
+                  </Fragment>
                 </Grid>
                 <Grid item xs={12}>
                   <Fragment>
@@ -134,45 +232,25 @@ const NewAppForm = () => {
                         <TextField
                           name="growEditionSizeTo"
                           type="number"
-                          label="How Many NFTs do you want to generate"
-                          defaultValue={growEditionSizeTo}
+                          label="How Many NFTs do you want to generate*"
+                          defaultValue={formState.layerConfigurations[0].growEditionSizeTo}
                           fullWidth
                           margin="dense"
                           InputLabelProps={{
                             shrink: true,
                           }}
-                          onChange={handleChange}
-                          error={getFormError("name")?.isError}
-                          helperText={getFormError("name")?.error}
+                          onChange={handleFormatChange}
                         />
                       </Grid>
                       {layers.map((layer, index) => (
-                        <Fragment key={`${layer}-${index}`}>
-                          <Grid container spacing={2} style={{ marginTop: "10px" }}>
-                            <Grid item xs={10}>
-                              <TextField
-                                name={`${index}`}
-                                type="text"
-                                label="Layer Name"
-                                defaultValue={layer}
-                                fullWidth
-                                margin="dense"
-                                InputLabelProps={{
-                                  shrink: true,
-                                }}
-                                onChange={handleLayersChange}
-                                error={getFormError(`${index}`)?.isError}
-                                helperText={getFormError(`${index}`)?.error}
-                              />
-                            </Grid>
-
-                            <Grid item xs={2} style={{ marginTop: "10px" }}>
-                              <Button variant="outlined" disabled={layers.length === 1} onClick={() => removeLayer(layer)}>
-                                <RemoveIcon fontSize="large" color="warning" />
-                              </Button>
-                            </Grid>
-                          </Grid>
-                        </Fragment>
+                        <LayerComponent
+                          key={`${layer}-${index}`}
+                          removeLayer={removeLayer}
+                          layer={layer}
+                          index={index}
+                          disableRemove={layers.length === 1}
+                          handleChange={handleLayersChange}
+                        />
                       ))}
                     </CardContent>
                     <CardActions>
@@ -183,43 +261,7 @@ const NewAppForm = () => {
                             Add New Layer
                           </Button>
                           <Button variant="outlined">
-                            <HtmlTooltip arrow
-                              title={
-                                <Fragment>
-                                  <em>Each layer represents a folder that contains different images (traits) for that layer.</em>
-                                  <p>
-                                    <em>
-                                      For instance, a <b>face</b> layer will contain the different types of faces for your project
-                                    </em>
-                                  </p>
-
-                                  <p>
-                                    {" "}
-                                    <em>
-                                      You can assign rarity by adding <b>#</b> and a number to your file names.
-                                    </em>
-                                  </p>
-
-                                  <p>
-                                    <em>If your faces folder contains two files, e.g <b>blue-eyes.png</b> and <b>brown-eyes.png</b>, you can rename them thus</em>{" "}
-                                  </p>
-
-                                  <p>
-                                    {" "}
-                                    <em>
-                                      <b>blue-eyes#15.png</b> and <b>brown-eyes#85.png</b> this means that for every 100 NFTs generated, blue-eyes will appear 15
-                                      times and brown-eyes will appear 85 times
-                                    </em>
-                                  </p>
-                                  <p>
-                                    <em>
-                                      Typical layer names are <b>head</b>,<b>face</b>,<b>eyes</b>,<b>mouth</b>
-                                    </em>
-                                  </p>
-                                </Fragment>
-                              }>
-                              <LightbulbOutlined />
-                            </HtmlTooltip>
+                            <LayersHelpTooltipComponent />
                           </Button>
                         </ButtonGroup>
                       </Grid>
@@ -232,7 +274,7 @@ const NewAppForm = () => {
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
                 <Grid item xs={8}></Grid>
                 <Grid item xs={4}>
-                  <Button size="medium" color="primary" variant="contained">
+                  <Button size="medium" color="primary" variant="contained" onClick={() => addNewApp()}>
                     Save App Settings
                   </Button>
                 </Grid>

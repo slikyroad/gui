@@ -1,6 +1,6 @@
 import { Container, Tab, Tabs } from "@mui/material";
 import { Box } from "@mui/system";
-import React, { Fragment } from "react";
+import React from "react";
 import { useWallet } from "use-wallet";
 import NavBar from "./nav-bar";
 import NewAppForm from "./new-app-form";

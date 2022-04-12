@@ -1,13 +1,19 @@
 import { Button, ButtonGroup, Card, CardActions, CardContent, Container, Grid, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import { ethers } from "ethers";
 import { Fragment, useState } from "react";
 import { toast } from "react-toastify";
+import { useWallet } from "use-wallet";
 import { NewAppFormState } from "../utils/dtos";
 import LayerComponent from "./components/layer-component";
 import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
+import Web3 from "web3";
+import { startNewProject } from "../utils/api";
+import Loading from "./components/loading";
 
 const NewAppForm = () => {
-  const [formState, setFormState] = useState<NewAppFormState>({
+  const wallet = useWallet();
+  const defaultFormState: NewAppFormState = {
     rarityDelimiter: "#",
     editionNameFormat: "#",
     outputDirName: "output",
@@ -34,7 +40,10 @@ const NewAppForm = () => {
       height: 100,
     },
     svgBase64DataOnly: false,
-  });
+  };
+
+  const [formState, setFormState] = useState<NewAppFormState>(defaultFormState);
+  const [showLoading, setShowLoading] = useState(false);
 
   const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
 
@@ -76,7 +85,6 @@ const NewAppForm = () => {
     const _layers = layers;
     _layers[index] = value;
 
-    console.log(_layers);
     setLayers(_layers);
   };
 
@@ -85,18 +93,23 @@ const NewAppForm = () => {
     setLayers([...layers, `new-layer-${index}`]);
   };
 
-  const removeLayer = (layer: string) => {
-    console.log("removing...", layer);
+  const removeLayer = (layer: string) => {    
     let _layers = layers;
     const index = _layers.indexOf(layer);
-    console.log(index);
     _layers.splice(index, 1);
-    console.log(_layers);
     setLayers([..._layers]);
   };
 
-  const addNewApp = () => {
-    console.log(formState);
+  const frontEndSign = async (signerOrProvider: any, account: any, message: string) => {
+    const web3 = new Web3(signerOrProvider);
+    const signature = await web3.eth.personal.sign(message, account, ""); // Last param is the password, and is null to request a signature in the wallet
+
+    // console.log(message);
+    // console.log(signature);
+    return signature;
+  };
+
+  const addNewApp = async () => {
     if (!formState.name || formState.name.length === 0) {
       toast.error("Please enter Project Name");
       return;
@@ -106,7 +119,7 @@ const NewAppForm = () => {
       toast.error("Please enter Project Description");
       return;
     }
-    
+
     if (!formState.format.width || +formState.format.width <= 0) {
       toast.error("Please enter width of generated NFT");
       return;
@@ -127,6 +140,37 @@ const NewAppForm = () => {
     formState.layerConfigurations[0].layersOrder = layers.map((layer) => {
       return { name: layer };
     });
+
+    const _formState = formState;
+    _formState.name = formState.name + "-" + wallet.account;
+
+    setShowLoading(true);
+    try {
+      const message = ethers.utils.hashMessage(_formState.name);
+      const signature = await frontEndSign(wallet.ethereum, wallet.account, message);
+      formState.hash = message;
+      formState.signature = signature;
+    } catch (error: any) {
+      toast.error(`Message Signing Failed: ${error.toString()}`);
+    }
+    try {
+      const response = (await startNewProject(formState)).data;
+      setShowLoading(false);
+
+      if (response.data.message) {
+        if (response.status === "success") {
+          toast.success(response.data.message);
+          setFormState(defaultFormState);
+        } else {
+          toast.error(response.data.message);
+        }
+      } else {
+        toast.error(`Can not determine response from server`);
+      }
+    } catch (error: any) {
+      setShowLoading(false);
+      toast.error(`Can not save new project: ${error.toString()}`);
+    }
   };
 
   return (
@@ -283,6 +327,7 @@ const NewAppForm = () => {
           </Fragment>
         </Card>
       </Box>
+      <Loading open={showLoading} />
     </Container>
   );
 };

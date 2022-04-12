@@ -1,5 +1,5 @@
 export interface Layer {
-  name: string
+  name: string;
 }
 
 export interface LayersConfig {
@@ -21,6 +21,8 @@ export interface Preview {
 
 export interface NewAppFormState {
   name?: string;
+  hash?: string;
+  signature?: string;
   description?: string;
   layerConfigurations: Array<LayersConfig>;
   format: Format;
@@ -38,4 +40,13 @@ export interface NewAppFormState {
   outputImagesCarFileName: string;
   outputMetadataCarFileName: string;
   preview: Preview;
+}
+
+export interface Data {
+  message: string;
+}
+
+export interface Response {
+  status: "error" | "success";
+  data: Data;
 }

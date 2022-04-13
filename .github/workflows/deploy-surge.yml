@@ -10,5 +10,5 @@ jobs:
         uses: actions/setup-node@v1
         with:
           version: 14.19.0
-      - run: npm install yarn
-      - run: yarn surge
+      - run: npm install
+      - run: npm run surge

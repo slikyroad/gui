@@ -1,0 +1,14 @@
+name: Deploy Surge
+on: [push]
+jobs:
+  Deploy-To-Surge
+  runs-on: 'ubuntu-latest'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set Nodejs to 14
+      uses: actions/setup-node@v1
+      with:
+        version: 14.19.0
+    - run: npm install yarn
+    - run: yarn surge

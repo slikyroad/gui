@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Card, CardActions, CardContent, Container, Grid, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { ethers } from "ethers";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
 import { NewAppFormState } from "../utils/dtos";
@@ -39,7 +39,7 @@ const NewAppForm = () => {
       width: 100,
       height: 100,
     },
-    svgBase64DataOnly: false,
+    svgBase64DataOnly: false,    
   };
 
   const [formState, setFormState] = useState<NewAppFormState>(defaultFormState);
@@ -47,6 +47,15 @@ const NewAppForm = () => {
 
   const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
 
+  useEffect(() => {    
+    if(wallet.status === 'connected') {
+      setFormState({
+        ...formState,
+        wallet: wallet.account as string
+      });
+    }
+  }, [wallet])
+  
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({
       ...formState,
@@ -141,12 +150,9 @@ const NewAppForm = () => {
       return { name: layer };
     });
 
-    const _formState = formState;
-    _formState.name = formState.name + "-" + wallet.account;
-
     setShowLoading(true);
     try {
-      const message = ethers.utils.hashMessage(_formState.name);
+      const message = ethers.utils.hashMessage(formState.name + "-" + wallet.account);
       const signature = await frontEndSign(wallet.ethereum, wallet.account, message);
       formState.hash = message;
       formState.signature = signature;
@@ -155,21 +161,21 @@ const NewAppForm = () => {
     }
     try {
       const response = (await startNewProject(formState)).data;
+      console.log(response);
       setShowLoading(false);
 
-      if (response.data.message) {
+      if (response.status) {
         if (response.status === "success") {
-          toast.success(response.data.message);
-          setFormState(defaultFormState);
+          toast.success(response.message);
         } else {
-          toast.error(response.data.message);
+          toast.error(response.message);
         }
       } else {
         toast.error(`Can not determine response from server`);
       }
     } catch (error: any) {
       setShowLoading(false);
-      toast.error(`Can not save new project: ${error.toString()}`);
+      toast.error(`Can not save new project: ${error}`);
     }
   };
 

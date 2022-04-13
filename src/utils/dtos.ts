@@ -21,6 +21,7 @@ export interface Preview {
 
 export interface NewAppFormState {
   name?: string;
+  wallet?: string;
   hash?: string;
   signature?: string;
   description?: string;

@@ -226,6 +226,7 @@ const NewAppForm = (props: Props) => {
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
                 <Grid item xs={12}>
                   <TextField
+                    disabled={mode}
                     name="name"
                     type="text"
                     label="Project Name*"

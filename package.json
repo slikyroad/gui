@@ -47,7 +47,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "yarn build",
-    "deploy": "npx gh-pages -d build"
+    "deploy": "npx gh-pages -d build",
+    "surge": "yarn build && npx surge -p build --domain sliky.surge.sh"
   },
   "eslintConfig": {
     "extends": [

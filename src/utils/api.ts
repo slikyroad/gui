@@ -2,25 +2,26 @@ import axios from "axios";
 import { Project } from "./dtos";
 
 const API = axios.create({
-  baseURL: "http://localhost:8998",
+  // baseURL: "http://localhost:8998",
+  baseURL: "https://silkroad-server-v2.herokuapp.com",
 });
 
 export const editProject = (formState: Project): Promise<any> => {
-    console.log("POSTing.....", formState);
-    return new Promise((resolve, reject) => {
-      API.put("/project", formState).then(
-        (response) => {
-          resolve(response);
-        },
-        (error) => {
-          if (error.response && error.response.data) {
-            reject(error.response.data.data.error);
-          } else {
-            reject(error);
-          }
+  console.log("POSTing.....", formState);
+  return new Promise((resolve, reject) => {
+    API.put("/project", formState).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
         }
-      );
-    });    
+      }
+    );
+  });
 };
 
 export const startNewProject = (formState: Project): Promise<any> => {

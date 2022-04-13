@@ -1,17 +1,38 @@
 import { Container, Tab, Tabs } from "@mui/material";
 import { Box } from "@mui/system";
-import React from "react";
+import React, { Fragment, useState } from "react";
 import { useWallet } from "use-wallet";
+import { Project } from "../utils/dtos";
 import NavBar from "./nav-bar";
 import NewAppForm from "./new-app-form";
+import YourApps from "./your-apps";
 
 const App = () => {
   const [value, setValue] = React.useState(0);
+  const [reload, setReload] = useState<boolean>(false);
+  const [project, setProject] = useState<Project>();
+  const [editMode, setEditMode] = useState<boolean>(false);
+
+  const forceReload = () => {
+    setReload(!reload);
+  };
 
   const wallet = useWallet();
 
+  const setTab = (tab: number) => {
+    setValue(tab);
+  }
+
+  const selectProject = (project: Project) => {
+    setTab(0);
+    setEditMode(true);
+    setProject(project);
+  }
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+    console.log("forcing reload");
+    forceReload();
   };
 
   interface TabPanelProps {
@@ -24,17 +45,11 @@ const App = () => {
     const { children, value, index, ...other } = props;
 
     return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-      >
+      <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
         {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
       </div>
     );
-  };  
+  };
   return (
     <Container maxWidth="lg" style={{ paddingTop: "10px" }}>
       <NavBar />
@@ -43,13 +58,17 @@ const App = () => {
         <Tab label="Your Apps" />
       </Tabs>
 
-      <TabPanel value={value} index={0}>
-      {wallet.isConnected() && <NewAppForm />}
-      </TabPanel>            
-      <TabPanel value={value} index={1}>
-        Your Apps
-      </TabPanel>
-      </Container>
+      {wallet.isConnected() && (
+        <Fragment>
+          <TabPanel value={value} index={0}>
+            <NewAppForm editMode={editMode} project={project} />
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            <YourApps forceReload={reload} editProject={selectProject} />
+          </TabPanel>
+        </Fragment>
+      )}
+    </Container>
   );
 };
 

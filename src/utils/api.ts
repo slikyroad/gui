@@ -1,22 +1,59 @@
-import axios from 'axios';
-import { NewAppFormState } from './dtos';
-
+import axios from "axios";
+import { Project } from "./dtos";
 
 const API = axios.create({
-  baseURL: "http://localhost:8998"
+  baseURL: "http://localhost:8998",
 });
 
-export const startNewProject = (formState: NewAppFormState): Promise<any> => {    
+export const editProject = (formState: Project): Promise<any> => {
     console.log("POSTing.....", formState);
     return new Promise((resolve, reject) => {
-        API.post('/project/start', formState).then(response => {
-            resolve(response);
-        }, error => {
-            if(error.response && error.response.data) {
-                reject(error.response.data.data.error);
-            } else {            
-                reject(error);
-            }
-        });
-    })
-}
+      API.put("/project", formState).then(
+        (response) => {
+          resolve(response);
+        },
+        (error) => {
+          if (error.response && error.response.data) {
+            reject(error.response.data.data.error);
+          } else {
+            reject(error);
+          }
+        }
+      );
+    });    
+};
+
+export const startNewProject = (formState: Project): Promise<any> => {
+  console.log("POSTing.....", formState);
+  return new Promise((resolve, reject) => {
+    API.post("/project", formState).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });
+};
+
+export const loadUserProjects = (wallet: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    API.get(`/project/${wallet}`).then(
+      (response) => {
+        resolve(response.data);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });
+};

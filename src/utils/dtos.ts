@@ -3,8 +3,8 @@ export interface Layer {
 }
 
 export interface LayersConfig {
-  growEditionSizeTo?: number;
-  layersOrder?: Array<Layer>;
+  growEditionSizeTo: number;
+  layersOrder: Array<Layer>;
 }
 
 export interface Format {
@@ -19,12 +19,20 @@ export interface Preview {
   imageName: string;
 }
 
-export interface NewAppFormState {
-  name?: string;
-  wallet?: string;
+export enum Stage {
+  NEW_PROJECT
+}
+
+export enum Status {
+  PENDING, COMPLETED, FAILED, START_NEW_BASH_COMPLETED
+}
+
+export interface Project {
+  name: string;
+  wallet: string;
   hash?: string;
   signature?: string;
-  description?: string;
+  description: string;
   layerConfigurations: Array<LayersConfig>;
   format: Format;
   rarityDelimiter: string;
@@ -41,6 +49,9 @@ export interface NewAppFormState {
   outputImagesCarFileName: string;
   outputMetadataCarFileName: string;
   preview: Preview;
+  stage?: Stage;
+  status?: Status;
+  nfts?: Array<any>;
 }
 
 export interface Data {

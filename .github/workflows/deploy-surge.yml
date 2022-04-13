@@ -1,7 +1,7 @@
 name: Deploy Surge
 on: [push]
 jobs:
-  Deploy-To-Surge
+  Deploy-To-Surge:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Checkout

@@ -14,6 +14,42 @@ export const frontEndSign = async (signerOrProvider: any, account: any, message:
   return signature;
 };
 
+export const generateNFTs = async (project: Project): Promise<any> => {
+  console.log("POSTing.....", project);
+  return new Promise((resolve, reject) => {
+    API.post("/project/generate", project).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });    
+}
+
+export const resetProject = async (project: Project): Promise<any> => {
+  console.log("POSTing.....", project);
+  return new Promise((resolve, reject) => {
+    API.post("/project/reset", project).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });    
+}
+
 export const uploadLayersFile = async (formData: any): Promise<any> => {
   console.log("POSTing.....", formData);
   return new Promise((resolve, reject) => {

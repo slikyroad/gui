@@ -20,7 +20,7 @@ export interface Preview {
 }
 
 export enum Stage {
-  NEW_PROJECT, UPLOAD_LAYERS_FILE
+  NEW_PROJECT, UPLOAD_LAYERS_FILE, GENERATE_NFTS
 }
 
 export enum Status {
@@ -51,6 +51,7 @@ export interface Project {
   preview: Preview;
   stage?: Stage;
   status?: Status;
+  statusMessage?: string;
   nfts?: Array<any>;
 }
 

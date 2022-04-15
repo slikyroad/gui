@@ -57,7 +57,7 @@ export interface Project {
   stage?: Stage;
   status?: Status;
   statusMessage?: string;
-  nfts?: Array<any>;
+  nfts: Array<any>;
 }
 
 export interface Data {

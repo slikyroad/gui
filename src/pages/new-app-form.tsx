@@ -33,6 +33,7 @@ const NewAppForm = (props: Props) => {
       uniqueDnaTorrance: 10000,
       outputImagesCarFileName: "images.car",
       outputMetadataCarFileName: "metadata.car",
+      nfts: [],
       layerConfigurations: [
         {
           growEditionSizeTo: 100,

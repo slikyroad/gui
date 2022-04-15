@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
 import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadLayersFile, uploadToIPFS } from "../utils/api";
 import { Project, Stage, Status } from "../utils/dtos";
+import NFTsTable from "./components/nfts-table";
 
 interface Props {
   forceReload: boolean;
@@ -125,6 +126,11 @@ const YourApps = (props: Props) => {
                   {pr.statusMessage.substring(0, 500)}
                 </Typography>
               )}
+              {
+                pr.stage === Stage.UPLOAD_TO_IPFS && (
+                  <NFTsTable nfts={pr.nfts} />
+                )
+              }
             </CardContent>
             <CardActions>
               {pr.stage === Stage.NEW_PROJECT && (
@@ -185,8 +191,8 @@ const YourApps = (props: Props) => {
                         variant="contained"
                         color="primary"
                         size="medium"
-                        onClick={() => uploadIPFS(pr)}>
-                        Check IPFS Status
+                        onClick={() => loadProjects()}>
+                        Reload Table Data
                       </Button>
                     </Grid>
                   </Grid>
@@ -201,7 +207,7 @@ const YourApps = (props: Props) => {
                     </Button>
                   </Grid>
                 </Grid>
-              )}
+              )}              
             </CardActions>
           </Card>
         ))}

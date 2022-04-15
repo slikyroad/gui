@@ -3,8 +3,8 @@ import { Project } from "./dtos";
 import Web3 from "web3";
 
 const API = axios.create({
-  baseURL: "http://localhost:8998",
-  //baseURL: "https://silkroad-server-v2.herokuapp.com",
+  //baseURL: "http://localhost:8998",
+  baseURL: "https://silkroad-server-v2.herokuapp.com",
 });
 
 export const frontEndSign = async (signerOrProvider: any, account: any, message: string) => {

@@ -116,16 +116,14 @@ const YourApps = (props: Props) => {
                         Generate NFTs
                       </Button>
                     </Grid>
-                    {pr.status === Status.PENDING && (
-                      <Grid item xs={9}>
-                        <input hidden type="file" onChange={(e) => handleFileChanged(e, pr)} id="raised-button-file" />
-                        <label htmlFor="raised-button-file">
-                          <Button variant="contained" component="span" size="medium" color="secondary">
-                            Upload Layers (zipped folder)
-                          </Button>
-                        </label>
-                      </Grid>
-                    )}
+                    <Grid item xs={9}>
+                      <input hidden type="file" onChange={(e) => handleFileChanged(e, pr)} id="raised-button-file" />
+                      <label htmlFor="raised-button-file">
+                        <Button variant="contained" component="span" size="medium" color="secondary">
+                          Upload Layers (zipped folder)
+                        </Button>
+                      </label>
+                    </Grid>
                   </Grid>
                 </Fragment>
               )}

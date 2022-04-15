@@ -9,6 +9,6 @@ jobs:
       - name: Set Nodejs to 14
         uses: actions/setup-node@v1
         with:
-          version: 14.19.0
+          node-version: 14.19.0
       - run: CI=false npm install
       - run: CI=false npm run surge

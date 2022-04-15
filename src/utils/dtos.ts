@@ -20,17 +20,17 @@ export interface Preview {
 }
 
 export enum Stage {
-  NEW_PROJECT
+  NEW_PROJECT, UPLOAD_LAYERS_FILE
 }
 
 export enum Status {
-  PENDING, COMPLETED, FAILED, START_NEW_BASH_COMPLETED
+  PENDING, COMPLETED, FAILED
 }
 
 export interface Project {
   name: string;
   wallet: string;
-  hash?: string;
+  hash: string;
   signature?: string;
   description: string;
   layerConfigurations: Array<LayersConfig>;

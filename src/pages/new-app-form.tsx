@@ -7,12 +7,11 @@ import { useWallet } from "use-wallet";
 import { Project } from "../utils/dtos";
 import LayerComponent from "./components/layer-component";
 import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
-import Web3 from "web3";
-import { editProject, startNewProject } from "../utils/api";
-import Loading from "./components/loading";
+import { editProject, frontEndSign, startNewProject } from "../utils/api";
 
 interface Props {
   editMode: boolean;
+  setShowLoading: (loading: boolean) => void;
   project?: Project;
 }
 
@@ -20,6 +19,7 @@ const NewAppForm = (props: Props) => {
   const defaultFormState = useMemo(() => {
     return {
       name: "",
+      hash: "",
       description: "",
       wallet: "",
       tags: "",
@@ -53,11 +53,10 @@ const NewAppForm = (props: Props) => {
     };
   }, []);
 
-  const { editMode, project } = props;
+  const { editMode, project, setShowLoading } = props;
   const wallet = useWallet();
   const [mode, setMode] = useState(editMode);
-  const [formState, setFormState] = useState<Project>(defaultFormState);
-  const [showLoading, setShowLoading] = useState(false);
+  const [formState, setFormState] = useState<Project>(defaultFormState);  
 
   const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
 
@@ -131,15 +130,6 @@ const NewAppForm = (props: Props) => {
     setLayers([..._layers]);
   };
 
-  const frontEndSign = async (signerOrProvider: any, account: any, message: string) => {
-    const web3 = new Web3(signerOrProvider);
-    const signature = await web3.eth.personal.sign(message, account, ""); // Last param is the password, and is null to request a signature in the wallet
-
-    // console.log(message);
-    // console.log(signature);
-    return signature;
-  };
-
   const addNewApp = async () => {
     if (!formState.name || formState.name.length === 0) {
       toast.error("Please enter Project Name");
@@ -180,6 +170,7 @@ const NewAppForm = (props: Props) => {
       formState.signature = signature;
     } catch (error: any) {
       toast.error(`Message Signing Failed: ${error.toString()}`);
+      return;
     }
     try {
       let response;
@@ -375,8 +366,7 @@ const NewAppForm = (props: Props) => {
             </CardActions>
           </Fragment>
         </Card>
-      </Box>
-      <Loading open={showLoading} />
+      </Box>    
     </Container>
   );
 };

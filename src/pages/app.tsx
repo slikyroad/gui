@@ -3,6 +3,7 @@ import { Box } from "@mui/system";
 import React, { Fragment, useState } from "react";
 import { useWallet } from "use-wallet";
 import { Project } from "../utils/dtos";
+import Loading from "./components/loading";
 import NavBar from "./nav-bar";
 import NewAppForm from "./new-app-form";
 import YourApps from "./your-apps";
@@ -12,6 +13,7 @@ const App = () => {
   const [reload, setReload] = useState<boolean>(false);
   const [project, setProject] = useState<Project>();
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   const forceReload = () => {
     setReload(!reload);
@@ -61,11 +63,12 @@ const App = () => {
       {wallet.isConnected() && (
         <Fragment>
           <TabPanel value={value} index={0}>
-            <NewAppForm editMode={editMode} project={project} />
+            <NewAppForm editMode={editMode} project={project} setShowLoading={setShowLoading} />
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <YourApps forceReload={reload} editProject={selectProject} />
+            <YourApps forceReload={reload} editProject={selectProject} setShowLoading={setShowLoading} />
           </TabPanel>
+          <Loading open={showLoading} />
         </Fragment>
       )}
     </Container>

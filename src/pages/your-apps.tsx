@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
-import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadLayersFile } from "../utils/api";
+import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadLayersFile, uploadToIPFS } from "../utils/api";
 import { Project, Stage, Status } from "../utils/dtos";
 
 interface Props {
@@ -101,6 +101,13 @@ const YourApps = (props: Props) => {
     }
   };
 
+  const uploadIPFS = async (pr: Project) => {
+    await prepareSignature(pr);
+    if (pr.signature && pr.signature.length > 0) {
+      callAPI(pr, uploadToIPFS);
+    }
+  };
+
   return (
     <Fragment>
       {projects &&
@@ -123,7 +130,7 @@ const YourApps = (props: Props) => {
               {pr.stage === Stage.NEW_PROJECT && (
                 <Fragment>
                   <Grid container spacing={2}>
-                    <Grid item xs={3} sx={{ textAlign: "right" }}>
+                    <Grid item xs={3}>
                       <Button variant="contained" color="primary" size="medium" onClick={() => editProject(pr)}>
                         Edit App
                       </Button>
@@ -157,8 +164,29 @@ const YourApps = (props: Props) => {
                 <Fragment>
                   <Grid container spacing={2}>
                     <Grid item xs={4} sx={{ textAlign: "right" }}>
-                      <Button disabled={pr.status === Status.PENDING} variant="contained" color="primary" size="medium" onClick={() => generate(pr)}>
+                      <Button
+                        disabled={pr.status === Status.PENDING}
+                        variant="contained"
+                        color="primary"
+                        size="medium"
+                        onClick={() => uploadIPFS(pr)}>
                         Upload to IPFS
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Fragment>
+              )}
+
+              {pr.stage === Stage.UPLOAD_TO_IPFS && (
+                <Fragment>
+                  <Grid container spacing={2}>
+                    <Grid item xs={5} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="medium"
+                        onClick={() => uploadIPFS(pr)}>
+                        Check IPFS Status
                       </Button>
                     </Grid>
                   </Grid>

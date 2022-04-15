@@ -20,11 +20,16 @@ export interface Preview {
 }
 
 export enum Stage {
-  NEW_PROJECT, UPLOAD_LAYERS_FILE, GENERATE_NFTS
+  NEW_PROJECT,
+  UPLOAD_LAYERS_FILE,
+  GENERATE_NFTS,
+  UPLOAD_TO_IPFS,
 }
 
 export enum Status {
-  PENDING, COMPLETED, FAILED
+  PENDING,
+  COMPLETED,
+  FAILED,
 }
 
 export interface Project {

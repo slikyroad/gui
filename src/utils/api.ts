@@ -14,6 +14,25 @@ export const frontEndSign = async (signerOrProvider: any, account: any, message:
   return signature;
 };
 
+
+export const uploadToIPFS = async (project: Project): Promise<any> => {
+  console.log("POSTing.....", project);
+  return new Promise((resolve, reject) => {
+    API.post("/project/ipfs", project).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });    
+}
+
 export const generateNFTs = async (project: Project): Promise<any> => {
   console.log("POSTing.....", project);
   return new Promise((resolve, reject) => {

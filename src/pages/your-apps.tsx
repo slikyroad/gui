@@ -13,25 +13,27 @@ interface Props {
   setShowLoading: (loading: boolean) => void;
 }
 const YourApps = (props: Props) => {
+  const baseUrl = process.env.REACT_APP_SERVER_URL as string;
   const { forceReload, editProject, setShowLoading } = props;
   const wallet = useWallet();
 
   const [projects, setProjects] = useState<Array<Project>>([]);
 
   const loadProjects = useCallback(async () => {
-    const _projects = await loadUserProjects(wallet.account as string);
-    console.log("Loaded Projects: ", _projects.data);
-    setProjects(_projects.data);
-  }, [wallet]);
+    const _projects = await loadUserProjects(baseUrl, wallet.account as string);
+    if (_projects.data && _projects.data.length > 0) {
+      setProjects(_projects.data);
+    }
+  }, [wallet, baseUrl]);
 
   useEffect(() => {
     loadProjects();
   }, [wallet, forceReload, loadProjects]);
 
-  const callAPI = async (data: any, method: (data: any) => Promise<any>) => {
+  const callAPI = async (data: any, method: (url: string, data: any) => Promise<any>) => {
     setShowLoading(true);
     try {
-      const response = (await method(data)).data;
+      const response = (await method(baseUrl, data)).data;
 
       setShowLoading(false);
 
@@ -52,7 +54,6 @@ const YourApps = (props: Props) => {
   };
 
   const handleFileChanged = async (e: any, project: Project) => {
-    console.log("Handling File Chnaged: ", project);
     const selectedFile = e.target.files[0];
     const formData = new FormData();
 
@@ -114,6 +115,7 @@ const YourApps = (props: Props) => {
       {projects &&
         projects.map((pr) => (
           <Card sx={{ minWidth: 275 }} key={pr.hash}>
+            <hr />
             <CardContent>
               <Typography variant="h5" gutterBottom>
                 {pr.name}

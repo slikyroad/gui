@@ -4,12 +4,20 @@ import { UseWalletProvider } from "use-wallet";
 import "./index.css";
 import App from "./pages/app";
 import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import reportWebVitals from "./reportWebVitals";
+
+const chainId = process.env.REACT_APP_CHAIN_ID as string;
 
 ReactDOM.render(
   <React.StrictMode>
-    <UseWalletProvider>
+    <UseWalletProvider
+      autoConnect
+      connectors={{
+        injected: {
+          chainId: [chainId],
+        },
+      }}>
       <ToastContainer />
       <App />
     </UseWalletProvider>

@@ -24,6 +24,7 @@ export enum Stage {
   UPLOAD_LAYERS_FILE,
   GENERATE_NFTS,
   UPLOAD_TO_IPFS,
+  CREATED_COLLECTION
 }
 
 export enum Status {
@@ -58,6 +59,7 @@ export interface Project {
   status?: Status;
   statusMessage?: string;
   nfts: Array<any>;
+  collection: string;
 }
 
 export interface Data {

@@ -38,6 +38,7 @@ export default function NavBar(props: any) {
           });
         } catch (addError) {
           console.log("Did not add network");
+          throw(addError);          
         }
       }
     }

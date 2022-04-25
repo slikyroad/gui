@@ -16,6 +16,7 @@ interface Props {
 }
 
 const NewAppForm = (props: Props) => {
+  const baseUrl = process.env.REACT_APP_SERVER_URL as string;
   const defaultFormState = useMemo(() => {
     return {
       name: "",
@@ -33,6 +34,7 @@ const NewAppForm = (props: Props) => {
       uniqueDnaTorrance: 10000,
       outputImagesCarFileName: "images.car",
       outputMetadataCarFileName: "metadata.car",
+      collection: "",
       nfts: [],
       layerConfigurations: [
         {
@@ -62,11 +64,8 @@ const NewAppForm = (props: Props) => {
   const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
 
   useEffect(() => {
-    console.log("editMode: ", mode);
-    console.log("project: ", project);
     if (mode && project) {
       const lo = project.layerConfigurations.flatMap((l) => l.layersOrder).map((l) => l.name);
-      console.log("Layers Order: ", lo);
       setLayers(lo);
       setFormState(project);
     }
@@ -176,12 +175,11 @@ const NewAppForm = (props: Props) => {
     try {
       let response;
       if (mode) {
-        response = (await editProject(formState)).data;
+        response = (await editProject(baseUrl, formState)).data;
       } else {
-        response = (await startNewProject(formState)).data;
+        response = (await startNewProject(baseUrl, formState)).data;
       }
 
-      console.log(response);
       setShowLoading(false);
 
       if (response.status) {
@@ -350,15 +348,15 @@ const NewAppForm = (props: Props) => {
             </CardContent>
             <CardActions>
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
-                <Grid item xs={6}></Grid>
-                <Grid item xs={3}>
+                <Grid item xs={4}></Grid>
+                <Grid item xs={4}>
                   {mode && (
                     <Button size="medium" color="error" variant="contained" onClick={() => cancelMode()}>
                       Cancel Edit
                     </Button>
                   )}
                 </Grid>
-                <Grid item xs={3} sx={{ textAlign: "right" }}>
+                <Grid item xs={4} sx={{ textAlign: "right" }}>
                   <Button size="medium" color="primary" variant="contained" onClick={() => addNewApp()}>
                     {mode ? "Edit App Settings" : "Save App Settings"}
                   </Button>

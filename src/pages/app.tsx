@@ -4,6 +4,7 @@ import React, { Fragment, useState } from "react";
 import { useWallet } from "use-wallet";
 import { Project } from "../utils/dtos";
 import Loading from "./components/loading";
+import CreateCollectionForm from "./create-collection";
 import NavBar from "./nav-bar";
 import NewAppForm from "./new-app-form";
 import YourApps from "./your-apps";
@@ -23,17 +24,16 @@ const App = () => {
 
   const setTab = (tab: number) => {
     setValue(tab);
-  }
+  };
 
   const selectProject = (project: Project) => {
     setTab(0);
     setEditMode(true);
     setProject(project);
-  }
+  };
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
-    console.log("forcing reload");
     forceReload();
   };
 
@@ -58,6 +58,8 @@ const App = () => {
       <Tabs value={value} onChange={handleChange} aria-label="Tabs">
         <Tab label="Create New App" />
         <Tab label="Your Apps" />
+        <Tab label="Create Collection" />
+        <Tab label="Buy NFTs" />
       </Tabs>
 
       {wallet.isConnected() && (
@@ -68,6 +70,10 @@ const App = () => {
           <TabPanel value={value} index={1}>
             <YourApps forceReload={reload} editProject={selectProject} setShowLoading={setShowLoading} />
           </TabPanel>
+          <TabPanel value={value} index={2}>
+            <CreateCollectionForm setShowLoading={setShowLoading} />
+          </TabPanel>
+          <TabPanel value={value} index={3}></TabPanel>
           <Loading open={showLoading} />
         </Fragment>
       )}

@@ -191,9 +191,9 @@ const CreateCollectionForm = (props: Props) => {
           toast.info("Creating Collection....: ");
           console.log("Price: ", ethers.utils.parseUnits(formState.price.toString(), "ether"));
           const createCollectionTxPromise = silkRoadContract.createCollection(
-            selectedProject?.layerConfigurations[0].growEditionSizeTo,
+            // selectedProject?.layerConfigurations[0].growEditionSizeTo,
             ethers.utils.parseUnits(formState.price.toString(), "ether"),
-            selectedProject?.hash + "1",
+            selectedProject?.hash + "2",
             formState.name,
             formState.symbol,
             formState.randomType
@@ -222,6 +222,7 @@ const CreateCollectionForm = (props: Props) => {
 
             if (selectedProject) {
               selectedProject.collection = address;
+              selectedProject.price = formState.price;
               selectedProject.stage = Stage.CREATED_COLLECTION;
               selectedProject.status = Status.COMPLETED;
             }
@@ -233,6 +234,7 @@ const CreateCollectionForm = (props: Props) => {
           }
         } else {
           toast.error("Wallet is not connected");
+          setShowLoading(false);
         }
       }
     } catch (error: any) {

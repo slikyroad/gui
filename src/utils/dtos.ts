@@ -39,6 +39,7 @@ export interface Project {
   hash: string;
   signature?: string;
   description: string;
+  price: number;
   layerConfigurations: Array<LayersConfig>;
   format: Format;
   rarityDelimiter: string;

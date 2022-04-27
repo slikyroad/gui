@@ -21,6 +21,7 @@ const NewAppForm = (props: Props) => {
     return {
       name: "",
       hash: "",
+      price: 0,
       description: "",
       wallet: "",
       tags: "",
@@ -59,14 +60,16 @@ const NewAppForm = (props: Props) => {
   const { editMode, project, setShowLoading } = props;
   const wallet = useWallet();
   const [mode, setMode] = useState(editMode);
-  const [formState, setFormState] = useState<Project>(defaultFormState);  
+  const [formState, setFormState] = useState<Project>(defaultFormState);
 
-  const [layers, setLayers] = useState<Array<string>>(["new-layer-0"]);
+  const [layers, setLayers] = useState<Array<Array<string>>>([["new-layer-0"]]);
+
+  const [numLayersConfig, setNumLayersConfig] = useState(1);
 
   useEffect(() => {
     if (mode && project) {
-      const lo = project.layerConfigurations.flatMap((l) => l.layersOrder).map((l) => l.name);
-      setLayers(lo);
+      // const lo = project.layerConfigurations.map((l) => l.layersOrder);
+      // setLayers(lo);
       setFormState(project);
     }
 
@@ -77,14 +80,14 @@ const NewAppForm = (props: Props) => {
     }
   }, [wallet, defaultFormState, mode, project]);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: any) => {
     setFormState({
       ...formState,
       [event.target.name]: event.target.value,
     });
   };
 
-  const handleFormatChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFormatChange = (event: any, lcIndex: number) => {
     const name = event.target.name;
 
     if (name === "width") {
@@ -101,32 +104,34 @@ const NewAppForm = (props: Props) => {
       });
     } else if (name === "growEditionSizeTo") {
       const _formState = formState;
-      _formState.layerConfigurations[0].growEditionSizeTo = +event.target.value;
+      _formState.layerConfigurations[lcIndex].growEditionSizeTo = +event.target.value;
       setFormState({
         ..._formState,
       });
     }
   };
 
-  const handleLayersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLayersChange = (event: any, lcIndex: number) => {
     const index = +event.target.name;
     const value = event.target.value;
 
     const _layers = layers;
     _layers[index] = value;
 
-    setLayers(_layers);
+    setLayers([..._layers]);
   };
 
-  const addNewLayer = () => {
-    const index = layers.length;
-    setLayers([...layers, `new-layer-${index}`]);
+  const addNewLayer = (lcIndex: number) => {
+    const index = layers[lcIndex].length;
+    const _layers = layers;
+    _layers[lcIndex].push(`new-layer-${index}`);
+    setLayers([..._layers]);
   };
 
-  const removeLayer = (layer: string) => {
+  const removeLayer = (layer: string, lcIndex: number) => {
     let _layers = layers;
-    const index = _layers.indexOf(layer);
-    _layers.splice(index, 1);
+    const index = _layers[lcIndex].indexOf(layer);
+    _layers[lcIndex].splice(index, 1);
     setLayers([..._layers]);
   };
 
@@ -158,8 +163,10 @@ const NewAppForm = (props: Props) => {
       }
     });
 
-    formState.layerConfigurations[0].layersOrder = layers.map((layer) => {
-      return { name: layer };
+    getLayersConfigAsArray().forEach((_, index) => {
+      formState.layerConfigurations[index].layersOrder = layers[index].map((layer) => {
+        return { name: layer };
+      });
     });
 
     setShowLoading(true);
@@ -200,8 +207,37 @@ const NewAppForm = (props: Props) => {
 
   const cancelMode = () => {
     setMode(false);
-    setLayers(["new-layer-0"]);
+    // setLayers(["new-layer-0"]);
     setFormState(defaultFormState);
+  };
+
+  const getLayersConfigAsArray = (): Array<number> => {
+    let sum = 0;
+    const numLayers = Array.from(Array(numLayersConfig)).map((x) => ++sum);
+    return numLayers;
+  };
+
+  const addNewLayersConfig = () => {
+    const _layers = layers;
+    console.log(_layers);
+
+    _layers.push(['new-layer-0']);
+
+    setLayers(_layers);
+
+    setNumLayersConfig(numLayersConfig + 1);
+    const lc = {
+      growEditionSizeTo: 100,
+      layersOrder: [],
+    };
+
+    const layersConfig = formState.layerConfigurations;
+    layersConfig.push(lc);
+    
+    setFormState({
+      ...formState,
+      layerConfigurations: layersConfig,
+    });
   };
 
   return (
@@ -226,7 +262,7 @@ const NewAppForm = (props: Props) => {
                     InputLabelProps={{
                       shrink: true,
                     }}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e)}
                   />
                 </Grid>
 
@@ -241,7 +277,7 @@ const NewAppForm = (props: Props) => {
                     InputLabelProps={{
                       shrink: true,
                     }}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -256,7 +292,7 @@ const NewAppForm = (props: Props) => {
                     InputLabelProps={{
                       shrink: true,
                     }}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -277,7 +313,7 @@ const NewAppForm = (props: Props) => {
                             InputLabelProps={{
                               shrink: true,
                             }}
-                            onChange={handleFormatChange}
+                            onChange={(e) => handleFormatChange(e, -1)}
                           />
                         </Grid>
                         <Grid item xs={12}>
@@ -291,64 +327,74 @@ const NewAppForm = (props: Props) => {
                             InputLabelProps={{
                               shrink: true,
                             }}
-                            onChange={handleFormatChange}
+                            onChange={(e) => handleFormatChange(e, -1)}
                           />
                         </Grid>
                       </Fragment>
                     </CardContent>
                   </Fragment>
                 </Grid>
-                <Grid item xs={12}>
-                  <Fragment>
-                    <CardContent>
-                      <Typography variant="h5" color="ButtonShadow" gutterBottom>
-                        Layers Configuration
-                      </Typography>
-                      <Grid item xs={12}>
-                        <TextField
-                          name="growEditionSizeTo"
-                          type="number"
-                          label="How Many NFTs do you want to generate*"
-                          value={formState.layerConfigurations[0].growEditionSizeTo}
-                          fullWidth
-                          margin="dense"
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          onChange={handleFormatChange}
-                        />
-                      </Grid>
-                      {layers.map((layer, index) => (
-                        <LayerComponent
-                          key={`${layer}-${index}`}
-                          removeLayer={removeLayer}
-                          layer={layer}
-                          index={index}
-                          disableRemove={layers.length === 1}
-                          handleChange={handleLayersChange}
-                        />
-                      ))}
-                    </CardContent>
-                    <CardActions>
-                      <Grid item xs={7}></Grid>
-                      <Grid item xs={5}>
-                        <ButtonGroup variant="contained" aria-label="outlined primary button group">
-                          <Button variant="outlined" onClick={() => addNewLayer()}>
-                            Add New Layer
-                          </Button>
-                          <Button variant="outlined">
-                            <LayersHelpTooltipComponent />
-                          </Button>
-                        </ButtonGroup>
-                      </Grid>
-                    </CardActions>
-                  </Fragment>
-                </Grid>
+                {getLayersConfigAsArray().map((_, lcIndex) => (
+                  <Grid item xs={12} key={lcIndex}>
+                    <Fragment>
+                      <CardContent>
+                        <Typography variant="h5" color="ButtonShadow" gutterBottom>
+                          Layers Configuration #{lcIndex + 1}
+                        </Typography>
+                        <Grid item xs={12}>
+                          <TextField
+                            name="growEditionSizeTo"
+                            type="number"
+                            label="How Many NFTs do you want to generate*"
+                            value={formState.layerConfigurations[lcIndex].growEditionSizeTo}
+                            fullWidth
+                            margin="dense"
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                            onChange={(e) => handleFormatChange(e, lcIndex)}
+                          />
+                        </Grid>
+                        {layers[lcIndex].map((layer, index) => (
+                          <LayerComponent
+                            key={`${layer}-${index}`}
+                            removeLayer={removeLayer}
+                            layer={layer}
+                            index={index}
+                            lcIndex={lcIndex}
+                            disableRemove={layers[lcIndex].length === 1}
+                            handleChange={(e) => handleLayersChange(e, index)}
+                          />
+                        ))}
+                      </CardContent>
+                      <CardActions>
+                        <Grid item xs={2}></Grid>
+                        <Grid item xs={5}></Grid>
+                        <Grid item xs={5}>
+                          <ButtonGroup variant="contained" aria-label="outlined primary button group">
+                            <Button variant="outlined" onClick={() => addNewLayer(lcIndex)}>
+                              Add New Layer
+                            </Button>
+                            <Button variant="outlined">
+                              <LayersHelpTooltipComponent />
+                            </Button>
+                          </ButtonGroup>
+                        </Grid>
+                      </CardActions>
+                    </Fragment>
+                  </Grid>
+                ))}
               </Grid>
             </CardContent>
             <CardActions>
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
-                <Grid item xs={4}></Grid>
+                <Grid item xs={4}>
+                  <ButtonGroup variant="contained" aria-label="outlined primary button group">
+                    <Button variant="outlined" onClick={() => addNewLayersConfig()}>
+                      Add New Layers Configuration
+                    </Button>
+                  </ButtonGroup>
+                </Grid>
                 <Grid item xs={4}>
                   {mode && (
                     <Button size="medium" color="error" variant="contained" onClick={() => cancelMode()}>
@@ -365,7 +411,7 @@ const NewAppForm = (props: Props) => {
             </CardActions>
           </Fragment>
         </Card>
-      </Box>    
+      </Box>
     </Container>
   );
 };

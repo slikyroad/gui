@@ -3,6 +3,7 @@ import { Box } from "@mui/system";
 import React, { Fragment, useState } from "react";
 import { useWallet } from "use-wallet";
 import { Project } from "../utils/dtos";
+import BuyNft from "./buy-nft";
 import Loading from "./components/loading";
 import CreateCollectionForm from "./create-collection";
 import NavBar from "./nav-bar";
@@ -73,7 +74,9 @@ const App = () => {
           <TabPanel value={value} index={2}>
             <CreateCollectionForm setShowLoading={setShowLoading} />
           </TabPanel>
-          <TabPanel value={value} index={3}></TabPanel>
+          <TabPanel value={value} index={3}>
+            <BuyNft setShowLoading={setShowLoading} />
+          </TabPanel>
           <Loading open={showLoading} />
         </Fragment>
       )}

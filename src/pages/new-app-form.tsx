@@ -70,8 +70,15 @@ const NewAppForm = (props: Props) => {
 
   useEffect(() => {
     if (mode && project) {
-      // const lo = project.layerConfigurations.map((l) => l.layersOrder);
-      // setLayers(lo);
+      const _layers = [];      
+      const layersOrder = project.layerConfigurations.map((l) => l.layersOrder);
+      setNumLayersConfig(layersOrder.length);
+      for(let i = 0; i < layersOrder.length; i++) {
+        const layers = layersOrder[i];
+        const _thisLayers = layers.map((l) => l.name);
+        _layers.push(_thisLayers);
+      }
+      setLayers(_layers);
       setFormState(project);
     }
 
@@ -168,10 +175,7 @@ const NewAppForm = (props: Props) => {
       }
     });
 
-    let sumGrowEdition = 0;
     getLayersConfigAsArray().forEach((_, index) => {
-      formState.layerConfigurations[index].growEditionSizeTo = formState.layerConfigurations[index].growEditionSizeTo + sumGrowEdition;
-      sumGrowEdition = formState.layerConfigurations[index].growEditionSizeTo + sumGrowEdition;
       formState.layerConfigurations[index].layersOrder = layers[index].map((layer) => {
         return { name: layer };
       });

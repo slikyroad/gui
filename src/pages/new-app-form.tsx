@@ -66,6 +66,8 @@ const NewAppForm = (props: Props) => {
 
   const [numLayersConfig, setNumLayersConfig] = useState(1);
 
+  const [layersList, setLayersList] = useState("");
+
   useEffect(() => {
     if (mode && project) {
       // const lo = project.layerConfigurations.map((l) => l.layersOrder);
@@ -86,6 +88,10 @@ const NewAppForm = (props: Props) => {
       [event.target.name]: event.target.value,
     });
   };
+
+  const handleLayersListChange = (event: any) => {
+    setLayersList(event.target.value);
+  };  
 
   const handleFormatChange = (event: any, lcIndex: number) => {
     const name = event.target.name;
@@ -116,9 +122,8 @@ const NewAppForm = (props: Props) => {
     const value = event.target.value;
 
     const _layers = layers;
-    _layers[index] = value;
-
-    setLayers([..._layers]);
+    _layers[lcIndex][index] = value;
+    setLayers(_layers);
   };
 
   const addNewLayer = (lcIndex: number) => {
@@ -163,7 +168,10 @@ const NewAppForm = (props: Props) => {
       }
     });
 
+    let sumGrowEdition = 0;
     getLayersConfigAsArray().forEach((_, index) => {
+      formState.layerConfigurations[index].growEditionSizeTo = formState.layerConfigurations[index].growEditionSizeTo + sumGrowEdition;
+      sumGrowEdition = formState.layerConfigurations[index].growEditionSizeTo + sumGrowEdition;
       formState.layerConfigurations[index].layersOrder = layers[index].map((layer) => {
         return { name: layer };
       });
@@ -201,6 +209,7 @@ const NewAppForm = (props: Props) => {
       }
     } catch (error: any) {
       setShowLoading(false);
+      console.log(formState);
       toast.error(`Can not save new project: ${error}`);
     }
   };
@@ -219,7 +228,6 @@ const NewAppForm = (props: Props) => {
 
   const addNewLayersConfig = () => {
     const _layers = layers;
-    console.log(_layers);
 
     _layers.push(['new-layer-0']);
 
@@ -334,18 +342,33 @@ const NewAppForm = (props: Props) => {
                     </CardContent>
                   </Fragment>
                 </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    placeholder="comma separated list of your layers"
+                    name="layersList"
+                    type="layersList"
+                    label="Layers List"
+                    value={layersList}
+                    fullWidth
+                    margin="dense"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={(e) => handleLayersListChange(e)}
+                  />
+                </Grid>                
                 {getLayersConfigAsArray().map((_, lcIndex) => (
                   <Grid item xs={12} key={lcIndex}>
                     <Fragment>
                       <CardContent>
                         <Typography variant="h5" color="ButtonShadow" gutterBottom>
-                          Layers Configuration #{lcIndex + 1}
+                          Layers Combination #{lcIndex + 1}
                         </Typography>
                         <Grid item xs={12}>
                           <TextField
                             name="growEditionSizeTo"
                             type="number"
-                            label="How Many NFTs do you want to generate*"
+                            label="How Many NFTs do you want to generate for this combination*"
                             value={formState.layerConfigurations[lcIndex].growEditionSizeTo}
                             fullWidth
                             margin="dense"
@@ -363,7 +386,7 @@ const NewAppForm = (props: Props) => {
                             index={index}
                             lcIndex={lcIndex}
                             disableRemove={layers[lcIndex].length === 1}
-                            handleChange={(e) => handleLayersChange(e, index)}
+                            handleChange={(e) => handleLayersChange(e, lcIndex)}
                           />
                         ))}
                       </CardContent>
@@ -391,7 +414,7 @@ const NewAppForm = (props: Props) => {
                 <Grid item xs={4}>
                   <ButtonGroup variant="contained" aria-label="outlined primary button group">
                     <Button variant="outlined" onClick={() => addNewLayersConfig()}>
-                      Add New Layers Configuration
+                      Add New Layers Combination
                     </Button>
                   </ButtonGroup>
                 </Grid>

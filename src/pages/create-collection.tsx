@@ -190,8 +190,9 @@ const CreateCollectionForm = (props: Props) => {
           const silkRoadContract = getSilkRoadContract(silkRoadAddress, wallet.ethereum);
           toast.info("Creating Collection....: ");
           console.log("Price: ", ethers.utils.parseUnits(formState.price.toString(), "ether"));
+          const numNFTs = selectedProject?.nfts.length;
           const createCollectionTxPromise = silkRoadContract.createCollection(
-            // selectedProject?.layerConfigurations[0].growEditionSizeTo,
+            numNFTs,
             ethers.utils.parseUnits(formState.price.toString(), "ether"),
             selectedProject?.hash + "2",
             formState.name,

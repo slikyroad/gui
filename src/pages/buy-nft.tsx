@@ -1,10 +1,12 @@
 import { Button, Card, CardActions, CardContent, Grid, Typography } from "@mui/material";
-import React, { Fragment, useCallback, useEffect, useState } from "react";
+import { ethers } from "ethers";
+import React, { Fragment, useCallback, useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
-import { loadUserProjects } from "../utils/api";
-import { getNftContract } from "../utils/contract.utils";
+import { loadProjects as loadAllProjects } from "../utils/api";
+import { getNftContract, isTransactionMined } from "../utils/contract.utils";
 import { Project, Stage } from "../utils/dtos";
+import { WalletStateContext } from "../utils/WalletStateContext";
 
 interface Props {
   setShowLoading: (loading: boolean) => void;
@@ -17,45 +19,79 @@ const BuyNft = (props: Props) => {
 
   const [projects, setProjects] = useState<Array<Project>>([]);
 
+  const walletStateContext = useContext(WalletStateContext);
+
   const loadProjects = useCallback(async () => {
-    const _projects = await loadUserProjects(baseUrl, wallet.account as string);
+    const _projects = await loadAllProjects(baseUrl);
     if (_projects.data && _projects.data.length > 0) {
-      setProjects(_projects.data);
+      setProjects(_projects.data.flat());
     }
-  }, [wallet, baseUrl]);
+  }, [baseUrl]);
 
   useEffect(() => {
     loadProjects();
   }, [wallet, loadProjects]);
 
-  const callAPI = async (data: any, method: (url: string, data: any) => Promise<any>) => {
-    setShowLoading(true);
-    try {
-      const response = (await method(baseUrl, data)).data;
+  const getTokenId = (txReceipt: any) => {
+    const relevantTransferEvent = txReceipt.events.find((e: any) => e.event === "Minted");
 
-      setShowLoading(false);
-
-      if (response.status) {
-        if (response.status === "success") {
-          toast.success(response.message);
-          loadProjects();
-        } else {
-          toast.error(response.message);
-        }
-      } else {
-        toast.error(`Can not determine response from server`);
-      }
-    } catch (error: any) {
-      setShowLoading(false);
-      toast.error(`Can not generate NFTs: ${error}`);
-    }
+    const owner = relevantTransferEvent.args.owner;
+    const tokenId = relevantTransferEvent.args.tokenId;
+    return { tokenId, owner };
   };
 
-  const buyNft = async (collectionAddress: string) => {
+  const buyNft = async (project: Project) => {
     setShowLoading(true);
     if (wallet.isConnected()) {
-      const nftContract = getNftContract(collectionAddress, wallet.ethereum);
+      const nftContract = getNftContract(project.collection, wallet.ethereum);
       toast.info("Buying Nft....: ");
+
+      const price = ethers.utils.parseEther(project.price + "");
+
+      const buyNftPromise = nftContract.mint({ value: price });
+
+      walletStateContext.addNewQueuedTx(buyNftPromise, "Minting NFT...", {});
+
+      const buyTx = await buyNftPromise;
+      const buyTxExecuted = await buyTx.wait(1);
+
+      toast.info("Checking Blockchain for transaction....");
+      const isMined = await isTransactionMined(
+        wallet.ethereum,
+        buyTxExecuted.transactionHash,
+        +(process.env.REACT_APP_TX_WAIT_BLOCK_COUNT as string)
+      );
+
+      if (!isMined) {
+        toast.error(`Transaction not found after ${process.env.REACT_APP_TX_WAIT_BLOCK_COUNT as string} blocks`);
+        return;
+      } else {
+        toast.info("Setting token Metadata");
+
+        const { tokenId } = getTokenId(buyTxExecuted);
+
+        const uri = project.nfts[tokenId].metadata;
+
+        const setUrIPromise = nftContract.setTokenUri(tokenId, uri);
+        walletStateContext.addNewQueuedTx(setUrIPromise, "Setting token Metadata", {});
+
+        const setUriTx = await setUrIPromise;
+        const setUriTxExecuted = await setUriTx.wait(1);
+        const isMined = await isTransactionMined(
+          wallet.ethereum,
+          setUriTxExecuted.transactionHash,
+          +(process.env.REACT_APP_TX_WAIT_BLOCK_COUNT as string)
+        );
+
+        if (!isMined) {
+          toast.error(`Transaction not found after ${process.env.REACT_APP_TX_WAIT_BLOCK_COUNT as string} blocks`);
+          return;
+        } else {
+          toast.success("Purchase successful");
+          toast.info(`New Token Minted with ID: ${tokenId}`);
+        }
+      }
+      setShowLoading(false);
     } else {
       toast.error("Wallet is not connected");
       setShowLoading(false);
@@ -65,7 +101,7 @@ const BuyNft = (props: Props) => {
     <Fragment>
       {projects &&
         projects.map((pr: Project) => (
-          <Fragment>
+          <Fragment key={pr.hash}>
             {pr.stage === Stage.CREATED_COLLECTION && (
               <Card sx={{ minWidth: 275 }} key={pr.hash}>
                 <hr />
@@ -78,14 +114,14 @@ const BuyNft = (props: Props) => {
                   </Typography>
                   <Grid container style={{ marginTop: "10px" }}>
                     {pr.nfts.slice(0, 10).map((nft) => (
-                      <Fragment>
+                      <Fragment key={nft.metadata}>
                         <img width="20px" src={nft.image} alt={pr.collection} />
                       </Fragment>
                     ))}
                   </Grid>
                 </CardContent>
                 <CardActions>
-                  <Button variant="contained" color="primary" size="medium" onClick={() => buyNft(pr.collection)}>
+                  <Button variant="contained" color="primary" size="medium" onClick={() => buyNft(pr)}>
                     Buy Nft
                   </Button>
                 </CardActions>

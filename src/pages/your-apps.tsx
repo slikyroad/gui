@@ -22,7 +22,7 @@ const YourApps = (props: Props) => {
   const loadProjects = useCallback(async () => {
     const _projects = await loadUserProjects(baseUrl, wallet.account as string);
     if (_projects.data && _projects.data.length > 0) {
-      setProjects(_projects.data);
+      setProjects(_projects.data.reverse());
     }
   }, [wallet, baseUrl]);
 

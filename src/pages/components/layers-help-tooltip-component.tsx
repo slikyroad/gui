@@ -48,6 +48,14 @@ const LayersHelpTooltipComponent = () => {
             Typical layer names are <b>head</b>,<b>face</b>,<b>eyes</b>,<b>mouth</b>
           </em>
         </p>
+        <p>
+          <em>
+            Layers should be added in the order you wish to combine them. For instance if you want to draw the face first, then the eyes and then the nose, your layers should be ordered thus <b>face,eyes,nose</b>
+          </em>
+        </p>   
+        <p>
+          <a href="https://ipfs.io/ipfs/bafkreicwfzj7f3xc6mjkyaqknd4gsosscznelpiwdtwmdp773irwuv2lqu">Here</a> is a sample layers folder you can use as reference
+        </p>     
       </Fragment>
     }>
     <LightbulbOutlined />

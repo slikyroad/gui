@@ -183,3 +183,27 @@ export const loadUserProjects = (baseUrl: string, wallet: string): Promise<any> 
     );
   });
 };
+
+export const loadProjects = (baseUrl: string): Promise<any> => {
+
+  const API = axios.create({
+    baseURL: baseUrl
+    // baseURL: "http://localhost:8998",
+    // baseURL: "https://silkroad-server-v2.herokuapp.com",
+  });
+
+  return new Promise((resolve, reject) => {    
+    API.get(`/project`).then(
+      (response) => {
+        resolve(response.data);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });
+};

@@ -8,6 +8,7 @@ import { Project } from "../utils/dtos";
 import LayerComponent from "./components/layer-component";
 import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
 import { editProject, frontEndSign, startNewProject } from "../utils/api";
+import { cloneDeep } from "lodash";
 
 interface Props {
   editMode: boolean;
@@ -148,27 +149,29 @@ const NewAppForm = (props: Props) => {
   };
 
   const addNewApp = async () => {
-    if (!formState.name || formState.name.length === 0) {
+    const _formState = cloneDeep(formState);
+    if (!_formState.name || _formState.name.length === 0) {
       toast.error("Please enter Project Name");
       return;
     }
 
-    if (!formState.description || formState.description.length === 0) {
+    if (!_formState.description || _formState.description.length === 0) {
       toast.error("Please enter Project Description");
       return;
     }
 
-    if (!formState.format.width || +formState.format.width <= 0) {
+    if (!_formState.format.width || +_formState.format.width <= 0) {
       toast.error("Please enter width of generated NFT");
       return;
     }
 
-    if (!formState.format.height || +formState.format.height <= 0) {
+    if (!_formState.format.height || +_formState.format.height <= 0) {
       toast.error("Please enter height of generated NFT");
       return;
     }
 
-    layers.forEach((layer) => {
+    const _layers = cloneDeep(layers);
+    _layers.forEach((layer) => {
       if (!layer || layer.length === 0) {
         toast.error("One of the layers is missing");
         return;
@@ -176,17 +179,17 @@ const NewAppForm = (props: Props) => {
     });
 
     getLayersConfigAsArray().forEach((_, index) => {
-      formState.layerConfigurations[index].layersOrder = layers[index].map((layer) => {
+      _formState.layerConfigurations[index].layersOrder = _layers[index].map((layer) => {
         return { name: layer };
       });
     });
 
     setShowLoading(true);
     try {
-      const message = ethers.utils.hashMessage(formState.name + "-" + wallet.account);
+      const message = ethers.utils.hashMessage(_formState.name + "-" + wallet.account);
       const signature = await frontEndSign(wallet.ethereum, wallet.account, message);
-      formState.hash = message;
-      formState.signature = signature;
+      _formState.hash = message;
+      _formState.signature = signature;
     } catch (error: any) {
       toast.error(`Message Signing Failed: ${error.toString()}`);
       return;
@@ -194,9 +197,9 @@ const NewAppForm = (props: Props) => {
     try {
       let response;
       if (mode) {
-        response = (await editProject(baseUrl, formState)).data;
+        response = (await editProject(baseUrl, _formState)).data;
       } else {
-        response = (await startNewProject(baseUrl, formState)).data;
+        response = (await startNewProject(baseUrl, _formState)).data;
       }
 
       setShowLoading(false);
@@ -213,14 +216,13 @@ const NewAppForm = (props: Props) => {
       }
     } catch (error: any) {
       setShowLoading(false);
-      console.log(formState);
       toast.error(`Can not save new project: ${error}`);
     }
   };
 
   const cancelMode = () => {
     setMode(false);
-    // setLayers(["new-layer-0"]);
+    setLayers([["new-layer-0"]]);
     setFormState(defaultFormState);
   };
 

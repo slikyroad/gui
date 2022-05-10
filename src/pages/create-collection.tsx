@@ -94,6 +94,16 @@ const CreateCollectionForm = (props: Props) => {
   }, [wallet, baseUrl]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      loadProjects();
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    }
+  });
+
+  useEffect(() => {
     const loadRandomContracts = async () => {
       if (wallet.isConnected()) {
         const silkRoadContract = getSilkRoadContract(silkRoadAddress, wallet.ethereum);
@@ -194,7 +204,7 @@ const CreateCollectionForm = (props: Props) => {
           const createCollectionTxPromise = silkRoadContract.createCollection(
             numNFTs,
             ethers.utils.parseUnits(formState.price.toString(), "ether"),
-            selectedProject?.hash + "2",
+            selectedProject?.hash,
             formState.name,
             formState.symbol,
             formState.randomType

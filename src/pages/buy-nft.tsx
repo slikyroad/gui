@@ -29,6 +29,16 @@ const BuyNft = (props: Props) => {
   }, [baseUrl]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      loadProjects();
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    }
+  });
+    
+  useEffect(() => {
     loadProjects();
   }, [wallet, loadProjects]);
 

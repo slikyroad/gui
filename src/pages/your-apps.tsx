@@ -19,12 +19,23 @@ const YourApps = (props: Props) => {
 
   const [projects, setProjects] = useState<Array<Project>>([]);
 
+
   const loadProjects = useCallback(async () => {
     const _projects = await loadUserProjects(baseUrl, wallet.account as string);
     if (_projects.data && _projects.data.length > 0) {
       setProjects(_projects.data.reverse());
     }
   }, [wallet, baseUrl]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadProjects();
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    }
+  });
 
   useEffect(() => {
     loadProjects();

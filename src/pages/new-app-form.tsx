@@ -4,11 +4,15 @@ import { ethers } from "ethers";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
-import { Project } from "../utils/dtos";
+import { CloudinaryLayerImages, Project } from "../utils/dtos";
 import LayerComponent from "./components/layer-component";
 import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
 import { editProject, frontEndSign, startNewProject } from "../utils/api";
 import { cloneDeep } from "lodash";
+import { FileUploader } from "react-drag-drop-files";
+import axios from "axios";
+import { RemoveCircleOutline } from "@mui/icons-material";
+import ImageUploader from "./components/uploader";
 
 interface Props {
   editMode: boolean;
@@ -55,6 +59,7 @@ const NewAppForm = (props: Props) => {
         height: 100,
       },
       svgBase64DataOnly: false,
+      cloudinaryFiles: [],
     };
   }, []);
 
@@ -63,18 +68,18 @@ const NewAppForm = (props: Props) => {
   const [mode, setMode] = useState(editMode);
   const [formState, setFormState] = useState<Project>(defaultFormState);
 
-  const [layers, setLayers] = useState<Array<Array<string>>>([["new-layer-0"]]);
+  const [layers, setLayers] = useState<Array<Array<string>>>([["face", "head", "eyes"]]);
 
   const [numLayersConfig, setNumLayersConfig] = useState(1);
 
-  const [layersList, setLayersList] = useState("");
+  const [layersList, setLayersList] = useState("face,head,eyes");
 
   useEffect(() => {
     if (mode && project) {
-      const _layers = [];      
+      const _layers = [];
       const layersOrder = project.layerConfigurations.map((l) => l.layersOrder);
       setNumLayersConfig(layersOrder.length);
-      for(let i = 0; i < layersOrder.length; i++) {
+      for (let i = 0; i < layersOrder.length; i++) {
         const layers = layersOrder[i];
         const _thisLayers = layers.map((l) => l.name);
         _layers.push(_thisLayers);
@@ -99,7 +104,7 @@ const NewAppForm = (props: Props) => {
 
   const handleLayersListChange = (event: any) => {
     setLayersList(event.target.value);
-  };  
+  };
 
   const handleFormatChange = (event: any, lcIndex: number) => {
     const name = event.target.name;
@@ -141,7 +146,7 @@ const NewAppForm = (props: Props) => {
     setLayers([..._layers]);
   };
 
-  const removeLayer = (layer: string, lcIndex: number) => {
+  const removeLayerInCombination = (layer: string, lcIndex: number) => {
     let _layers = layers;
     const index = _layers[lcIndex].indexOf(layer);
     _layers[lcIndex].splice(index, 1);
@@ -235,7 +240,7 @@ const NewAppForm = (props: Props) => {
   const addNewLayersConfig = () => {
     const _layers = layers;
 
-    _layers.push(['new-layer-0']);
+    _layers.push(["new-layer-0"]);
 
     setLayers(_layers);
 
@@ -247,11 +252,89 @@ const NewAppForm = (props: Props) => {
 
     const layersConfig = formState.layerConfigurations;
     layersConfig.push(lc);
-    
+
     setFormState({
       ...formState,
       layerConfigurations: layersConfig,
     });
+  };  
+
+  const layerImages = (layer: string): string[] => {
+    const cli = formState.cloudinaryFiles.find((cf) => cf.layerName === layer);
+    if (cli) {
+      return cli.layerImages;
+    }
+
+    return [];
+  };
+
+  const onFilesDropped = async (files: FileList, layer: string) => {
+    let layerImagesIndex = formState.cloudinaryFiles.findIndex((cf) => cf.layerName === layer);
+
+    let layersImages: CloudinaryLayerImages;
+
+    const _cf = cloneDeep(formState.cloudinaryFiles);
+
+    if (layerImagesIndex < 0) {
+      layersImages = {
+        layerName: layer,
+        layerImages: [],
+      };
+    } else {
+      layersImages = _cf[layerImagesIndex];
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files.item(i) as File;
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "mrefmkcs");
+
+      const image = await axios.post("https://api.cloudinary.com/v1_1/chimerahedonista/upload", data);
+
+      const url = image.data.secure_url;
+
+      console.log(url);
+
+      layersImages.layerImages.push(url);
+    }
+
+    console.log(layersImages);
+
+    if (layerImagesIndex >= 0) {
+      _cf[layerImagesIndex] = layersImages;
+    } else {
+      _cf.push(layersImages);
+    }
+
+    console.log(_cf);
+
+    setFormState({
+      ...formState,
+      cloudinaryFiles: _cf,
+    });
+  };
+
+  const resetLayerImages = (layer: string) => {
+    const cli = formState.cloudinaryFiles.find((cf) => cf.layerName === layer);
+    const _cf = cloneDeep(formState.cloudinaryFiles);
+    let layerImagesIndex = formState.cloudinaryFiles.findIndex((cf) => cf.layerName === layer);
+
+    if (cli) {
+      cli.layerImages = [];
+      _cf[layerImagesIndex] = cli;
+    }
+
+    setFormState({
+      ...formState,
+      cloudinaryFiles: _cf,
+    });
+  };
+  const removeOneLayer = (layer: string) => {
+    resetLayerImages(layer);
+    const layersAsList = layersList.split(",");
+    const _newLayersList = layersAsList.filter((l) => l !== layer).join(",");
+    setLayersList(_newLayersList);
   };
 
   return (
@@ -353,7 +436,7 @@ const NewAppForm = (props: Props) => {
                     placeholder="comma separated list of your layers"
                     name="layersList"
                     type="layersList"
-                    label="Layers List"
+                    label="Layers List (comma separated list of your layers)"
                     value={layersList}
                     fullWidth
                     margin="dense"
@@ -362,7 +445,13 @@ const NewAppForm = (props: Props) => {
                     }}
                     onChange={(e) => handleLayersListChange(e)}
                   />
-                </Grid>                
+                </Grid>
+                {layersList
+                  .split(",")
+                  .filter((layer) => layer.length > 0)
+                  .map((layer) => (
+                    <ImageUploader key={layer} layer={layer} layerImages={layerImages} onFilesDropped={onFilesDropped} removeOneLayer={removeOneLayer} resetLayerImages={resetLayerImages} />
+                  ))}
                 {getLayersConfigAsArray().map((_, lcIndex) => (
                   <Grid item xs={12} key={lcIndex}>
                     <Fragment>
@@ -387,7 +476,7 @@ const NewAppForm = (props: Props) => {
                         {layers[lcIndex].map((layer, index) => (
                           <LayerComponent
                             key={`${layer}-${index}`}
-                            removeLayer={removeLayer}
+                            removeLayer={removeLayerInCombination}
                             layer={layer}
                             index={index}
                             lcIndex={lcIndex}

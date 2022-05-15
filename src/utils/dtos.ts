@@ -61,6 +61,12 @@ export interface Project {
   statusMessage?: string;
   nfts: Array<any>;
   collection: string;
+  cloudinaryFiles: Array<CloudinaryLayerImages>;
+}
+
+export interface CloudinaryLayerImages {
+  layerName: string;
+  layerImages: Array<string>;
 }
 
 export interface Data {

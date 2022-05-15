@@ -15,3 +15,7 @@ code {
 button {
   text-transform: none !important;
 }
+
+.file-uploder {
+  background-color: bisque;
+}

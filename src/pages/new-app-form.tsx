@@ -9,9 +9,7 @@ import LayerComponent from "./components/layer-component";
 import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
 import { editProject, frontEndSign, startNewProject } from "../utils/api";
 import { cloneDeep } from "lodash";
-import { FileUploader } from "react-drag-drop-files";
 import axios from "axios";
-import { RemoveCircleOutline } from "@mui/icons-material";
 import ImageUploader from "./components/uploader";
 
 interface Props {
@@ -237,6 +235,22 @@ const NewAppForm = (props: Props) => {
     return numLayers;
   };
 
+  const removeLayerCombination = () => {
+    const _layers = layers;
+    _layers.pop();
+    setLayers([..._layers]);
+
+    const layersConfig = formState.layerConfigurations;
+    layersConfig.pop();
+
+    setFormState({
+      ...formState,
+      layerConfigurations: layersConfig,
+    });    
+
+    setNumLayersConfig(numLayersConfig - 1);
+  };
+
   const addNewLayersConfig = () => {
     const _layers = layers;
 
@@ -257,7 +271,7 @@ const NewAppForm = (props: Props) => {
       ...formState,
       layerConfigurations: layersConfig,
     });
-  };  
+  };
 
   const layerImages = (layer: string): string[] => {
     const cli = formState.cloudinaryFiles.find((cf) => cf.layerName === layer);
@@ -450,7 +464,14 @@ const NewAppForm = (props: Props) => {
                   .split(",")
                   .filter((layer) => layer.length > 0)
                   .map((layer) => (
-                    <ImageUploader key={layer} layer={layer} layerImages={layerImages} onFilesDropped={onFilesDropped} removeOneLayer={removeOneLayer} resetLayerImages={resetLayerImages} />
+                    <ImageUploader
+                      key={layer}
+                      layer={layer}
+                      layerImages={layerImages}
+                      onFilesDropped={onFilesDropped}
+                      removeOneLayer={removeOneLayer}
+                      resetLayerImages={resetLayerImages}
+                    />
                   ))}
                 {getLayersConfigAsArray().map((_, lcIndex) => (
                   <Grid item xs={12} key={lcIndex}>
@@ -506,10 +527,13 @@ const NewAppForm = (props: Props) => {
             </CardContent>
             <CardActions>
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
-                <Grid item xs={4}>
+                <Grid item xs={8}>
                   <ButtonGroup variant="contained" aria-label="outlined primary button group">
                     <Button variant="outlined" onClick={() => addNewLayersConfig()}>
                       Add New Layers Combination
+                    </Button>
+                    <Button disabled={numLayersConfig === 1} variant="contained" color="error" onClick={() => removeLayerCombination()}>
+                      Remove Layer Combination
                     </Button>
                   </ButtonGroup>
                 </Grid>

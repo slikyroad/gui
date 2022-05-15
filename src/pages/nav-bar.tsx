@@ -10,7 +10,7 @@ export default function NavBar(props: any) {
 
   const chainId = process.env.REACT_APP_CHAIN_ID as string;
 
-  const addGnosisChainNetwork = async () => {
+  const addGnosisChainNetwork = React.useCallback(async () => {
     try {
       await wallet.ethereum.request({
         method: "wallet_switchEthereumChain",
@@ -38,17 +38,17 @@ export default function NavBar(props: any) {
           });
         } catch (addError) {
           console.log("Did not add network");
-          throw(addError);          
+          throw addError;
         }
       }
     }
-  };
+  }, [chainId, wallet.ethereum]);
 
   React.useEffect(() => {
-    if (wallet.isConnected() && wallet.status === "connected" && wallet.chainId !== +chainId) {
+    if (wallet.status === "connected" && wallet.chainId !== +chainId) {
       addGnosisChainNetwork();
     }
-  }, [wallet.status]);
+  }, [addGnosisChainNetwork, chainId, wallet.chainId, wallet.status]);
 
   const ConnectWallet = () => {
     return (

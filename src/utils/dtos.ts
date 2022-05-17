@@ -21,7 +21,6 @@ export interface Preview {
 
 export enum Stage {
   NEW_PROJECT,
-  UPLOAD_LAYERS_FILE,
   GENERATE_NFTS,
   UPLOAD_TO_IPFS,
   CREATED_COLLECTION

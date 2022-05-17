@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
-import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadLayersFile, uploadToIPFS } from "../utils/api";
+import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadToIPFS } from "../utils/api";
 import { Project, Stage, Status } from "../utils/dtos";
 import NFTsTable from "./components/nfts-table";
 
@@ -19,7 +19,6 @@ const YourApps = (props: Props) => {
 
   const [projects, setProjects] = useState<Array<Project>>([]);
 
-
   const loadProjects = useCallback(async () => {
     const _projects = await loadUserProjects(baseUrl, wallet.account as string);
     if (_projects.data && _projects.data.length > 0) {
@@ -34,7 +33,7 @@ const YourApps = (props: Props) => {
 
     return () => {
       clearInterval(interval);
-    }
+    };
   });
 
   useEffect(() => {
@@ -62,27 +61,6 @@ const YourApps = (props: Props) => {
       setShowLoading(false);
       toast.error(`Can not generate NFTs: ${error}`);
     }
-  };
-
-  const handleFileChanged = async (e: any, project: Project) => {
-    const selectedFile = e.target.files[0];
-    const formData = new FormData();
-
-    formData.append("layers", selectedFile);
-    formData.append("name", project.name);
-    formData.append("hash", project.hash);
-    formData.append("wallet", wallet?.account || "");
-
-    try {
-      const message = ethers.utils.hashMessage(project.name + "-" + wallet.account);
-      const signature = await frontEndSign(wallet.ethereum, wallet.account, message);
-      formData.append("signature", signature);
-    } catch (error: any) {
-      toast.error(`Message Signing Failed`);
-      return;
-    }
-
-    callAPI(formData, uploadLayersFile);
   };
 
   const prepareSignature = async (pr: Project) => {
@@ -139,11 +117,7 @@ const YourApps = (props: Props) => {
                   {pr.statusMessage.substring(0, 500)}
                 </Typography>
               )}
-              {
-                pr.stage === Stage.UPLOAD_TO_IPFS && (
-                  <NFTsTable nfts={pr.nfts} />
-                )
-              }
+              {pr.stage === Stage.UPLOAD_TO_IPFS && <NFTsTable nfts={pr.nfts} />}
             </CardContent>
             <CardActions>
               {pr.stage === Stage.NEW_PROJECT && (
@@ -156,22 +130,7 @@ const YourApps = (props: Props) => {
                     </Grid>
 
                     <Grid item xs={9}>
-                      <input hidden type="file" onChange={(e) => handleFileChanged(e, pr)} id={`${pr.hash}-upload-button`} />
-                      <label htmlFor={`${pr.hash}-upload-button`}>
-                        <Button variant="contained" component="span" size="medium" color="secondary">
-                          Upload Layers (zipped folder)
-                        </Button>
-                      </label>
-                    </Grid>
-                  </Grid>
-                </Fragment>
-              )}
-
-              {pr.stage === Stage.UPLOAD_LAYERS_FILE && (
-                <Fragment>
-                  <Grid container spacing={2}>
-                    <Grid item xs={4} sx={{ textAlign: "right" }}>
-                      <Button disabled={pr.status === Status.PENDING} variant="contained" color="primary" size="medium" onClick={() => generate(pr)}>
+                      <Button variant="contained" color="primary" size="medium" onClick={() => generate(pr)}>
                         Generate NFTs
                       </Button>
                     </Grid>
@@ -200,11 +159,7 @@ const YourApps = (props: Props) => {
                 <Fragment>
                   <Grid container spacing={2}>
                     <Grid item xs={5} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="medium"
-                        onClick={() => loadProjects()}>
+                      <Button variant="contained" color="primary" size="medium" onClick={() => loadProjects()}>
                         Reload Table Data
                       </Button>
                     </Grid>
@@ -220,7 +175,7 @@ const YourApps = (props: Props) => {
                     </Button>
                   </Grid>
                 </Grid>
-              )}              
+              )}
             </CardActions>
           </Card>
         ))}

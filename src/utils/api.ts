@@ -85,31 +85,6 @@ export const resetProject = async (baseUrl: string, project: Project): Promise<a
   });    
 }
 
-export const uploadLayersFile = async (baseUrl: string, formData: any): Promise<any> => {
-  console.log("POSTing.....", formData);
-
-  const API = axios.create({
-    baseURL: baseUrl
-    // baseURL: "http://localhost:8998",
-    // baseURL: "https://silkroad-server-v2.herokuapp.com",
-  });
-
-  return new Promise((resolve, reject) => {
-    API.post("/layers/upload", formData).then(
-      (response) => {
-        resolve(response);
-      },
-      (error) => {
-        if (error.response && error.response.data) {
-          reject(error.response.data.data.error);
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });  
-};
-
 export const editProject = (baseUrl: string, formState: Project): Promise<any> => {
   console.log("POSTing.....", formState);
 

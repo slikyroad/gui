@@ -62,6 +62,7 @@ export interface Project {
   nfts: Array<any>;
   collection: string;
   cloudinaryFiles: Array<CloudinaryLayerImages>;
+  layersList: string;
 }
 
 export interface CloudinaryLayerImages {

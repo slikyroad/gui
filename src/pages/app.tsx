@@ -33,6 +33,10 @@ const App = () => {
     setProject(project);
   };
 
+  const changeTab = (tabIndex: number) => {
+    setTab(tabIndex);
+  }
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
     forceReload();
@@ -66,7 +70,7 @@ const App = () => {
       {wallet.isConnected() && (
         <Fragment>
           <TabPanel value={value} index={0}>
-            <NewAppForm editMode={editMode} project={project} setShowLoading={setShowLoading} />
+            <NewAppForm editMode={editMode} project={project} setShowLoading={setShowLoading} changeTab={changeTab} />
           </TabPanel>
           <TabPanel value={value} index={1}>
             <YourApps forceReload={reload} editProject={selectProject} setShowLoading={setShowLoading} />

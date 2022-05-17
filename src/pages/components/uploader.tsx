@@ -11,7 +11,7 @@ export interface Props {
   resetLayerImages: (layer: string) => void;
 }
 
-const fileTypes = ["JPEG", "PNG", "GIF"];
+const fileTypes = ["JPG", "JPEG", "PNG", "GIF"];
 const ImageUploader = (props: Props) => {
   const { layer, onFilesDropped, removeOneLayer, layerImages, resetLayerImages } = props;
   return (
@@ -43,12 +43,16 @@ const ImageUploader = (props: Props) => {
           </Button>
         </Grid>
         <Grid item xs={12}>
-          {layerImages(layer).map((layerImage) => (
-            <Typography variant="caption" color="ButtonShadow" gutterBottom>
-              <a href={layerImage}>{layerImage.substring(layerImage.lastIndexOf("/") + 1)}</a>
-              {"/,"}
-            </Typography>
-          ))}
+          <Grid container>
+            {layerImages(layer).map((layerImage) => (
+              <Grid item xs={3} key={layerImage}>
+                <Typography variant="caption" color="ButtonShadow" gutterBottom>
+                  <a href={layerImage}>{layerImage.substring(layerImage.lastIndexOf("/") + 1)}</a>
+                  {"/,"}
+                </Typography>
+              </Grid>
+            ))}
+          </Grid>
           <br />
           {layerImages(layer).length > 0 && (
             <Fragment>

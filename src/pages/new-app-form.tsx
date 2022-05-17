@@ -15,6 +15,7 @@ import ImageUploader from "./components/uploader";
 interface Props {
   editMode: boolean;
   setShowLoading: (loading: boolean) => void;
+  changeTab: (index: number) => void;
   project?: Project;
 }
 
@@ -58,19 +59,20 @@ const NewAppForm = (props: Props) => {
       },
       svgBase64DataOnly: false,
       cloudinaryFiles: [],
+      layersList: "face,head,eyes",
     };
   }, []);
 
-  const { editMode, project, setShowLoading } = props;
+  const { editMode, project, setShowLoading, changeTab } = props;
   const wallet = useWallet();
   const [mode, setMode] = useState(editMode);
   const [formState, setFormState] = useState<Project>(defaultFormState);
 
-  const [layers, setLayers] = useState<Array<Array<string>>>([["face", "head", "eyes"]]);
+  const [layers, setLayers] = useState<Array<Array<string>>>([defaultFormState.layersList.split(",")]);
 
   const [numLayersConfig, setNumLayersConfig] = useState(1);
 
-  const [layersList, setLayersList] = useState("face,head,eyes");
+  const [filesUploading, setFilesUploading] = useState<boolean>(false);
 
   useEffect(() => {
     if (mode && project) {
@@ -98,10 +100,6 @@ const NewAppForm = (props: Props) => {
       ...formState,
       [event.target.name]: event.target.value,
     });
-  };
-
-  const handleLayersListChange = (event: any) => {
-    setLayersList(event.target.value);
   };
 
   const handleFormatChange = (event: any, lcIndex: number) => {
@@ -152,6 +150,16 @@ const NewAppForm = (props: Props) => {
   };
 
   const addNewApp = async () => {
+    if (filesUploading) {
+      toast.error("Please wait for pending uploads to finish");
+      return;
+    }
+
+    if (formState.cloudinaryFiles.length < formState.layersList.split(",").length) {
+      toast.error("Incomplete layers file. Please upload layers files");
+      return;
+    }
+
     const _formState = cloneDeep(formState);
     if (!_formState.name || _formState.name.length === 0) {
       toast.error("Please enter Project Name");
@@ -227,6 +235,9 @@ const NewAppForm = (props: Props) => {
     setMode(false);
     setLayers([["new-layer-0"]]);
     setFormState(defaultFormState);
+    if (mode) {
+      changeTab(1);
+    }
   };
 
   const getLayersConfigAsArray = (): Array<number> => {
@@ -246,7 +257,7 @@ const NewAppForm = (props: Props) => {
     setFormState({
       ...formState,
       layerConfigurations: layersConfig,
-    });    
+    });
 
     setNumLayersConfig(numLayersConfig - 1);
   };
@@ -283,6 +294,15 @@ const NewAppForm = (props: Props) => {
   };
 
   const onFilesDropped = async (files: FileList, layer: string) => {
+    if (filesUploading) {
+      toast.error("Please wait for pending uploads to finish");
+      return;
+    }
+
+    console.log(layer);
+    console.log(formState.cloudinaryFiles);
+
+    toast("Uploading please wait....");
     let layerImagesIndex = formState.cloudinaryFiles.findIndex((cf) => cf.layerName === layer);
 
     let layersImages: CloudinaryLayerImages;
@@ -298,6 +318,7 @@ const NewAppForm = (props: Props) => {
       layersImages = _cf[layerImagesIndex];
     }
 
+    setFilesUploading(true);
     for (let i = 0; i < files.length; i++) {
       const file = files.item(i) as File;
       const data = new FormData();
@@ -327,6 +348,9 @@ const NewAppForm = (props: Props) => {
       ...formState,
       cloudinaryFiles: _cf,
     });
+
+    toast("Uploads finished succesfully");
+    setFilesUploading(false);
   };
 
   const resetLayerImages = (layer: string) => {
@@ -344,11 +368,12 @@ const NewAppForm = (props: Props) => {
       cloudinaryFiles: _cf,
     });
   };
+
   const removeOneLayer = (layer: string) => {
     resetLayerImages(layer);
-    const layersAsList = layersList.split(",");
+    const layersAsList = formState.layersList.split(",");
     const _newLayersList = layersAsList.filter((l) => l !== layer).join(",");
-    setLayersList(_newLayersList);
+    setFormState({...formState, layersList: _newLayersList});
   };
 
   return (
@@ -451,16 +476,16 @@ const NewAppForm = (props: Props) => {
                     name="layersList"
                     type="layersList"
                     label="Layers List (comma separated list of your layers)"
-                    value={layersList}
+                    value={formState.layersList}
                     fullWidth
                     margin="dense"
                     InputLabelProps={{
                       shrink: true,
                     }}
-                    onChange={(e) => handleLayersListChange(e)}
+                    onChange={(e) => handleChange(e)}
                   />
                 </Grid>
-                {layersList
+                {formState.layersList
                   .split(",")
                   .filter((layer) => layer.length > 0)
                   .map((layer) => (
@@ -527,7 +552,7 @@ const NewAppForm = (props: Props) => {
             </CardContent>
             <CardActions>
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
-                <Grid item xs={8}>
+                <Grid item xs={12}>
                   <ButtonGroup variant="contained" aria-label="outlined primary button group">
                     <Button variant="outlined" onClick={() => addNewLayersConfig()}>
                       Add New Layers Combination
@@ -537,6 +562,7 @@ const NewAppForm = (props: Props) => {
                     </Button>
                   </ButtonGroup>
                 </Grid>
+                <Grid item xs={4}></Grid>
                 <Grid item xs={4}>
                   {mode && (
                     <Button size="medium" color="error" variant="contained" onClick={() => cancelMode()}>
@@ -546,7 +572,7 @@ const NewAppForm = (props: Props) => {
                 </Grid>
                 <Grid item xs={4} sx={{ textAlign: "right" }}>
                   <Button size="medium" color="primary" variant="contained" onClick={() => addNewApp()}>
-                    {mode ? "Edit App Settings" : "Save App Settings"}
+                    {mode ? "Update App Settings" : "Save App Settings"}
                   </Button>
                 </Grid>
               </Grid>

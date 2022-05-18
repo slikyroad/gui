@@ -67,6 +67,7 @@ export interface Project {
 export interface CloudinaryLayerImages {
   layerName: string;
   layerImages: Array<string>;
+  originalFileNames: Array<string>;
 }
 
 export interface Data {

@@ -130,7 +130,7 @@ const YourApps = (props: Props) => {
                     </Grid>
 
                     <Grid item xs={9}>
-                      <Button variant="contained" color="primary" size="medium" onClick={() => generate(pr)}>
+                      <Button disabled={pr.status === Status.PENDING} variant="contained" color="primary" size="medium" onClick={() => generate(pr)}>
                         Generate NFTs
                       </Button>
                     </Grid>

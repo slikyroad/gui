@@ -313,9 +313,13 @@ const NewAppForm = (props: Props) => {
       layersImages = {
         layerName: layer,
         layerImages: [],
+        originalFileNames: [],
       };
     } else {
       layersImages = _cf[layerImagesIndex];
+      if (!layersImages.originalFileNames) {
+        layersImages.originalFileNames = [];
+      }
     }
 
     setFilesUploading(true);
@@ -332,6 +336,7 @@ const NewAppForm = (props: Props) => {
       console.log(url);
 
       layersImages.layerImages.push(url);
+      layersImages.originalFileNames.push(file.name);
     }
 
     console.log(layersImages);
@@ -373,7 +378,7 @@ const NewAppForm = (props: Props) => {
     resetLayerImages(layer);
     const layersAsList = formState.layersList.split(",");
     const _newLayersList = layersAsList.filter((l) => l !== layer).join(",");
-    setFormState({...formState, layersList: _newLayersList});
+    setFormState({ ...formState, layersList: _newLayersList });
   };
 
   return (

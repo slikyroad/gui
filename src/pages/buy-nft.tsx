@@ -60,7 +60,7 @@ const BuyNft = (props: Props) => {
 
       const buyNftPromise = nftContract.mint({ value: price });
 
-      walletStateContext.addNewQueuedTx(buyNftPromise, "Minting NFT...", {});
+      // walletStateContext.addNewQueuedTx(buyNftPromise, "Minting NFT...", {});
 
       const buyTx = await buyNftPromise;
       const buyTxExecuted = await buyTx.wait(1);

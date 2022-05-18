@@ -134,7 +134,7 @@ const CreateCollectionForm = (props: Props) => {
       return false;
     }
 
-    if (!formState.price || formState.price === 0) {
+    if (!formState.price || formState.price <= 0) {
       setIsPriceError(true);
       setPriceError("Please enter price of collection");
       return false;
@@ -199,12 +199,15 @@ const CreateCollectionForm = (props: Props) => {
         if (wallet.isConnected()) {
           const silkRoadContract = getSilkRoadContract(silkRoadAddress, wallet.ethereum);
           toast.info("Creating Collection....: ");
+          console.log("Price: ", formState.price);
           console.log("Price: ", ethers.utils.parseUnits(formState.price.toString(), "ether"));
           const numNFTs = selectedProject?.nfts.length;
+          console.log("numNFTS: ", formState.randomType);
+
           const createCollectionTxPromise = silkRoadContract.createCollection(
             numNFTs,
             ethers.utils.parseUnits(formState.price.toString(), "ether"),
-            selectedProject?.hash,
+            selectedProject?.hash + "1",
             formState.name,
             formState.symbol,
             formState.randomType

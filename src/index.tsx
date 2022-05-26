@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import BuyNft from "./pages/buy-nft";
+import Collection from "./pages/collection";
 
 const chainId = process.env.REACT_APP_CHAIN_ID as string;
 
@@ -26,6 +27,7 @@ ReactDOM.render(
       <Route path="/" element={<App />} />
       <Route path="/gui" element={<App />} />
       <Route path="buy" element={<BuyNft />} />
+      <Route path="my-collection" element={<Collection />} />
     </Routes>
       </BrowserRouter>      
     </UseWalletProvider>

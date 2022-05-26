@@ -83,4 +83,5 @@ export interface NftBought {
   wallet: string;
   collection: string;
   tokenId: number;
+  imageUrl?: string;
 }

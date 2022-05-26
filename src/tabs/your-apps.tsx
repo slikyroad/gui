@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
 import { frontEndSign, generateNFTs, loadUserProjects, resetProject, uploadToIPFS } from "../utils/api";
 import { Project, Stage, Status } from "../utils/dtos";
-import NFTsTable from "./components/nfts-table";
+import NFTsTable from "../components/nfts-table";
 
 interface Props {
   forceReload: boolean;

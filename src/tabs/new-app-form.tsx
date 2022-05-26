@@ -5,12 +5,12 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
 import { CloudinaryLayerImages, Project } from "../utils/dtos";
-import LayerComponent from "./components/layer-component";
-import LayersHelpTooltipComponent from "./components/layers-help-tooltip-component";
+import LayerComponent from "../components/layer-component";
+import LayersHelpTooltipComponent from "../components/layers-help-tooltip-component";
 import { editProject, frontEndSign, startNewProject } from "../utils/api";
 import { cloneDeep } from "lodash";
 import axios from "axios";
-import ImageUploader from "./components/uploader";
+import ImageUploader from "../components/uploader";
 
 interface Props {
   editMode: boolean;

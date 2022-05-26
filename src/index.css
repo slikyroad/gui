@@ -19,3 +19,8 @@ button {
 .file-uploder {
   background-color: bisque;
 }
+
+.no-decoration {
+  text-decoration: none;
+  color: white;
+}

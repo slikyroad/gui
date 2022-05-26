@@ -4,8 +4,9 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { useWallet } from "use-wallet";
 import { Box, Button } from "@mui/material";
+import { Link } from "react-router-dom";
 
-export default function NavBar(props: any) {
+export default function NavBar() {
   const wallet = useWallet();
 
   const chainId = process.env.REACT_APP_CHAIN_ID as string;
@@ -50,7 +51,7 @@ export default function NavBar(props: any) {
     }
   }, [addGnosisChainNetwork, chainId, wallet.chainId, wallet.status]);
 
-  const ConnectWallet = () => {
+  const NavButtons = () => {
     return (
       <Box style={{ paddingTop: "10px", display: "flex", gap: "10px" }}>
         <Button
@@ -65,9 +66,22 @@ export default function NavBar(props: any) {
         </Button>
 
         {wallet.status === "connected" && (
-          <Button variant="contained" color="error" onClick={() => wallet.reset()}>
-            Disconnect
-          </Button>
+          <React.Fragment>
+            <Button variant="contained" color="error" onClick={() => wallet.reset()}>
+              Disconnect
+            </Button>
+
+            <Link to="/buy">
+              <Button color="secondary" variant="contained">
+                Buy Nfts
+              </Button>
+            </Link>
+            <Link to="/my-collection">
+              <Button color="secondary" variant="contained">
+                Your Collection
+              </Button>
+            </Link>
+          </React.Fragment>
         )}
       </Box>
     );
@@ -78,9 +92,11 @@ export default function NavBar(props: any) {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            SilkRoad NFT Generator
+            <Link to="/" className="no-decoration">
+              SilkRoad NFT Generator
+            </Link>
           </Typography>
-          <ConnectWallet />
+          <NavButtons />
         </Toolbar>
       </AppBar>
     </Box>

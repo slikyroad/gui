@@ -3,12 +3,12 @@ import { Box } from "@mui/system";
 import React, { Fragment, useState } from "react";
 import { useWallet } from "use-wallet";
 import { Project } from "../utils/dtos";
-import BuyNft from "./buy-nft";
-import Loading from "./components/loading";
-import CreateCollectionForm from "./create-collection";
-import NavBar from "./nav-bar";
-import NewAppForm from "./new-app-form";
-import YourApps from "./your-apps";
+import Loading from "../components/loading";
+import NavBar from "../components/nav-bar";
+import NewAppForm from "../tabs/new-app-form";
+import YourApps from "../tabs/your-apps";
+import CreateCollectionForm from "../tabs/create-collection";
+import { Outlet } from "react-router-dom";
 
 const App = () => {
   const [value, setValue] = React.useState(0);
@@ -35,7 +35,7 @@ const App = () => {
 
   const changeTab = (tabIndex: number) => {
     setTab(tabIndex);
-  }
+  };
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -64,7 +64,6 @@ const App = () => {
         <Tab label="Create New App" />
         <Tab label="Your Apps" />
         <Tab label="Create Collection" />
-        <Tab label="Buy NFTs" />
       </Tabs>
 
       {wallet.isConnected() && (
@@ -78,12 +77,10 @@ const App = () => {
           <TabPanel value={value} index={2}>
             <CreateCollectionForm setShowLoading={setShowLoading} />
           </TabPanel>
-          <TabPanel value={value} index={3}>
-            <BuyNft setShowLoading={setShowLoading} />
-          </TabPanel>
           <Loading open={showLoading} />
         </Fragment>
       )}
+      <Outlet />
     </Container>
   );
 };

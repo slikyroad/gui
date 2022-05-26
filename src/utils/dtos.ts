@@ -78,3 +78,9 @@ export interface Response {
   status: "error" | "success";
   data: Data;
 }
+
+export interface NftBought {
+  wallet: string;
+  collection: string;
+  tokenId: number;
+}

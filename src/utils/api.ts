@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Project } from "./dtos";
+import { NftBought, Project } from "./dtos";
 import Web3 from "web3";
 
 export const frontEndSign = async (signerOrProvider: any, account: any, message: string) => {
@@ -83,6 +83,55 @@ export const resetProject = async (baseUrl: string, project: Project): Promise<a
       }
     );
   });    
+}
+
+export const getUserNfts = (baseUrl: string, wallet: string): Promise<any> => {
+
+  const API = axios.create({
+    baseURL: baseUrl
+    // baseURL: "http://localhost:8998",
+    // baseURL: "https://silkroad-server-v2.herokuapp.com",
+  });
+
+  return new Promise((resolve, reject) => {    
+    API.get(`/project/user-nfts/${wallet}`).then(
+      (response) => {
+        resolve(response.data);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });
+};
+
+export const nftBought = (baseUrl: string, data: NftBought): Promise<any> => {
+  console.log("POSTing.....", data);
+
+  const API = axios.create({
+    baseURL: baseUrl
+    // baseURL: "http://localhost:8998",
+    // baseURL: "https://silkroad-server-v2.herokuapp.com",
+  });
+
+  return new Promise((resolve, reject) => {
+    API.post("/project/nft-bought", data).then(
+      (response) => {
+        resolve(response);
+      },
+      (error) => {
+        if (error.response && error.response.data) {
+          reject(error.response.data.data.error);
+        } else {
+          reject(error);
+        }
+      }
+    );
+  });  
 }
 
 export const editProject = (baseUrl: string, formState: Project): Promise<any> => {

@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import { useWallet } from "use-wallet";
 import Loading from "../components/loading";
 import NavBar from "../components/nav-bar";
-import { loadProjects as loadAllProjects } from "../utils/api";
+import { loadProjects as loadAllProjects, nftBought } from "../utils/api";
 import { getNftContract, isTransactionMined } from "../utils/contract.utils";
-import { Project, Stage } from "../utils/dtos";
+import { NftBought, Project, Stage } from "../utils/dtos";
 import { WalletStateContext } from "../utils/WalletStateContext";
 
 const BuyNft = () => {
@@ -47,6 +47,29 @@ const BuyNft = () => {
     const owner = relevantTransferEvent.args.owner;
     const tokenId = relevantTransferEvent.args.tokenId;
     return { tokenId, owner };
+  };
+
+  const callAPI = async (data: any, method: (url: string, data: any) => Promise<any>) => {
+    setShowLoading(true);
+    try {
+      const response = (await method(baseUrl, data)).data;
+
+      setShowLoading(false);
+
+      if (response.status) {
+        if (response.status === "success") {
+          toast.success(response.message);
+          loadProjects();
+        } else {
+          toast.error(response.message);
+        }
+      } else {
+        toast.error(`Can not determine response from server`);
+      }
+    } catch (error: any) {
+      setShowLoading(false);
+      toast.error(`Error buying NFT: ${error}`);
+    }
   };
 
   const buyNft = async (project: Project) => {
@@ -97,6 +120,13 @@ const BuyNft = () => {
             toast.error(`Transaction not found after ${process.env.REACT_APP_TX_WAIT_BLOCK_COUNT as string} blocks`);
             return;
           } else {
+            const data: NftBought = {
+              wallet: wallet.account as string,
+              collection: project.collection,
+              tokenId: Number(tokenId),
+            };
+            
+            callAPI(data, nftBought);
             toast.success("Purchase successful");
             toast.info(`New Token Minted with ID: ${tokenId}`);
           }
